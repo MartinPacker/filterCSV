@@ -1,0 +1,35 @@
+name: lint_python
+on:
+  pull_request:
+  push:
+    branches: [master]
+jobs:
+  lint_python:
+    runs-on: ubuntu-latest
+    # strategy:
+    #  matrix:
+    #    os: [ubuntu-latest, macos-latest, windows-latest]
+    #    python-version: [2.7, 3.5, 3.6, 3.7, 3.8]  # , pypy3]
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@master
+      - run: pip install black codespell flake8 isort pytest
+      - run: black --check . || true
+      # - run: black --diff . || true
+      # - if: matrix.python-version >= 3.6
+      #  run: |
+      #    pip install black
+      #    black --check .
+      - run: codespell --quiet-level=2 || true  # --ignore-words-list="" --skip=""
+      - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      - run: isort --recursive . || true
+      - run: pip install -r requirements.txt || true
+      - run: pytest . || true
+      - run: |
+          cat tests/badLevels.csv | ./filterCSV check repairsubtree # Test the ability to repair a file
+          cat tests/test1.csv     | ./filterCSV '^A1$' '3 note'     # Basic colouring and noting test
+          cat tests/test2.md      | ./filterCSV                     # Test of Markdown list import
+          cat tests/mdTest3.csv   | ./filterCSV markdown '2 3'      # Test of Markdown export
+          cat tests/mdTest3.csv   | ./filterCSV xml freemind        # Test of Freemind XML export
+          cat tests/test1.csv     | ./filterCSV 'A2A|X' 'keep'      # Test of 'keep' - with two surviving trees
+          cat tests/promotion.csv | ./filterCSV promote 2           # Test of promote
