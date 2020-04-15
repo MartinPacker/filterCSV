@@ -1,0 +1,9 @@
+"note",shape","level","level0","level1","level2"
+,,0,A
+,,1,,A1
+,,1,,A2
+,,2,,,A2A
+This is a test note - to see how it gets rendered.,,3,,,,A2A1
+,,3,,,,A2A2
+,,4,,,,,A2A21
+"This is another test note with a second line",square,0,X
