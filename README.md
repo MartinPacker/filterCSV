@@ -107,7 +107,7 @@ At present setting the position only seems to work for Level 0 (root) nodes. You
 
 If you specify `noshape`, `nocolour`, `nonote` or `noposition` the corresponding attribute is removed from matching nodes.
 
-Most usefuly you could specify this with a match condition of `all` to reset an entire column. For example, `nonote` could clear all the notes from a mind map - to prepare it for exporting from iThoughts.
+Most usefully you could specify this with a match condition of `all` to reset an entire column. For example, `nonote` could clear all the notes from a mind map - to prepare it for exporting from iThoughts.
 
 #### Eliminating A Level
 
