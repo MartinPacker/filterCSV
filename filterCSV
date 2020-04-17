@@ -104,23 +104,23 @@ class iThoughtsColours():
 
 class iThoughtsShapes():
     def __init__(self):
-		# Shapes as understood by iThoughts
-		self.shapes = [
-			"auto",
-			"rectangle",
-			"square",
-			"rounded",
-			"pill",
-			"parallelogram",
-			"diamond",
-			"triangle",
-			"oval",
-			"circle",
-			"underline",
-			"none",
-			"square bracket",
-			"curved bracket",
-		]
+        # Shapes as understood by iThoughts
+        self.shapes = [
+            "auto",
+            "rectangle",
+            "square",
+            "rounded",
+            "pill",
+            "parallelogram",
+            "diamond",
+            "triangle",
+            "oval",
+            "circle",
+            "underline",
+            "none",
+            "square bracket",
+            "curved bracket",
+        ]
 
 
     def getShapes(self):
