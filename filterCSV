@@ -17,8 +17,8 @@ Command line parameters are pairs of:
 
 Actions can be:
 
-* A colour number - relative to the top left of iThoughts' colour palette.
-* A colour RGB value.
+* A 1 or 2 digit colour number - relative to the top left of iThoughts' colour palette.
+* A colour RGB hexadecimal value.  Ex. FFFFFF is black, 000000 is white, FF0000 is red
 * 'delete'.
 * A shape - as named by iThoughts.
 """
@@ -188,7 +188,7 @@ class CSVTree(object):
 
             firstAction = actionsList[0]
 
-            if (firstAction == "repair") | (firstAction == "repairnode"):
+            if firstAction in ("repair", "repairnode"):
                 # Repair just this node
                 self.data["level"] = previousLevel + 1
                 sys.stderr.write(
