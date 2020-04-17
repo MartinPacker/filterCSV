@@ -33,73 +33,45 @@ import sys
 filterCSV_level = "1.0"
 filterCSV_date = "17 April, 2020"
 
-class iThoughtsColours():
-    def __init__(self):
-        self.colours = [
-            "FFB2B2",
-            "FFD8B2",
-            "FFFFB2",
-            "D8FFB2",
-            "B2FFB2",
-            "B2FFD8",
-            "B2FFFF",
-            "B2D8FF",
-            "B2B2FF",
-            "D8B2FF",
-            "FFB2FF",
-            "FFB2D8",
-            "B24747",
-            "B27C47",
-            "B2B247",
-            "7CB247",
-            "47B247",
-            "47B27C",
-            "47B2B2",
-            "477CB2",
-            "4747B2",
-            "7C47B2",
-            "B247B2",
-            "B2477C",
-            "FF0000",
-            "FF7F00",
-            "FFFF00",
-            "7FFF00",
-            "00FF00",
-            "00FF7F",
-            "00FFFF",
-            "007FFF",
-            "0000FF",
-            "7F00FF",
-            "FF00FF",
-            "FF007F",
-            "000000",
-            "929292",
-            "a9a9a9",
-            "C0C0C0",
-            "D6D6D6",
-            "FFFFFF",
-            "002b36",
-            "073642",
-            "586e75",
-            "657b83",
-            "839496",
-            "93a1a1",
-            "eee8d5",
-            "fdf6e3",
-            "b58900",
-            "cb4b16",
-            "dc322f",
-            "d33682",
-            "6c71c4",
-            "268bd2",
-            "2aa198",
-            "859900"]
+class iThoughtsColours:
+    colours = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2
+                 B2FFD8 B2FFFF B2D8FF B2B2FF D8B2FF
+                 FFB2FF FFB2D8 B24747 B27C47 B2B247
+                 7CB247 47B247 47B27C 47B2B2 477CB2
+                 4747B2 7C47B2 B247B2 B2477C FF0000
+                 FF7F00 FFFF00 7FFF00 00FF00 00FF7F
+                 00FFFF 007FFF 0000FF 7F00FF FF00FF
+                 FF007F 000000 929292 a9a9a9 C0C0C0
+                 D6D6D6 FFFFFF 002b36 073642 586e75
+                 657b83 839496 93a1a1 eee8d5 fdf6e3
+                 b58900 cb4b16 dc322f d33682 6c71c4
+                 268bd2 2aa198 859900""".split()
+
+    def __getitem__(self, key):
+        """
+        >>> ithought_colours = iThoughtsColours()
+        >>> ithought_colours[0]
+        'FFB2B2'
+        >>> ithought_colours[-1]
+        '859900'
+        """
+        return self.colours[key]
 
     def getColour(self, colourNumber):
-        # Get colour based on colour number (which starts at 1)
-        return self.colours[colourNumber - 1]
-
-    def getColourCount(self):
+        """Get colour based on colour number (which starts at 1)
+        >>> ithought_colours = iThoughtsColours()
+        >>> ithought_colours.getColour(1)
+        'FFB2B2'
+        >>> ithought_colours.getColour(58)
+        '859900'
+        """
+        return self[colourNumber - 1]
+    
+    def __len__(self):
+        """
+        >>> len(iThoughtsColours())
+        58
+        """
         return len(self.colours)
 
 class iThoughtsShapes():
@@ -227,7 +199,7 @@ class CSVTree():
 
                                 # We have an integer. If it is too big but not 6 digits
                                 # we flag an error and don't do the update
-                                if colourNumber > iThoughtsColours.getColourCount():
+                                if colourNumber > len(iThoughtsColours):
                                     sys.stderr.write(
                                         "Erroneous colour value "
                                         + str(colourNumber)
