@@ -24,9 +24,8 @@ jobs:
       - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - run: isort --recursive . || true
       - run: pip install -r requirements.txt || true
-      - run: ln -s filterCSV filterCSV.py
+      # - run: ln -s filterCSV filterCSV.py
       - run: pytest --doctest-modules
-      - run: pytest . || true
       - run: |
           cat tests/badLevels.csv | ./filterCSV check repairsubtree # Test the ability to repair a file
           cat tests/test1.csv     | ./filterCSV '^A1$' '3 note'     # Basic colouring and noting test

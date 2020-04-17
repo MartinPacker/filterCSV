@@ -21,15 +21,12 @@ Actions can be:
 * A colour RGB value.
 * 'delete'.
 * A shape - as named by iThoughts.
-
-
 """
 
-import os
-import sys
 import csv
 import re
 import string
+import sys
 
 # from CSVTree import CSVTree
 
@@ -69,15 +66,10 @@ class CSVTree(object):
 
     def isMatch(self, criterion):
         # Common method for establishing if a node matches some criterion, usually a regex
-        if (
-            (re.search(criterion, self.data["shape"]) != None)
-            or (re.search(criterion, self.data["colour"]) != None)
-            or (re.search(criterion, self.data["note"]) != None)
-            or (re.search(criterion, self.data["cell"]) != None)
-        ):
-            return True
-        else:
-            return False
+        return (re.search(criterion, self.data["shape"])
+                or re.search(criterion, self.data["colour"])
+                or re.search(criterion, self.data["note"])
+                or re.search(criterion, self.data["cell"]))
 
     def applyFilter(self, criterion, actionsList):
         # Apply filter to this node - if not tree root
@@ -611,6 +603,10 @@ class CSVTree(object):
 
 
 def formatWhitespaceCharacters(whitespace):
+    """
+    >>> formatWhitespaceCharacters("a b \\t c d")
+    '<tab><space><tab><space><tab><space><tab><space><tab>'
+    """
     formattedIndentCharacters = ""
     for c in whitespace:
         if c == " ":
