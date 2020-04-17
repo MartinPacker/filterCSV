@@ -30,11 +30,113 @@ import sys
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "0.9"
-filterCSV_date = "10 April, 2020"
+filterCSV_level = "1.0"
+filterCSV_date = "17 April, 2020"
+
+class iThoughtsColours():
+    def __init__(self):
+        self.colours = [
+            "FFB2B2",
+            "FFD8B2",
+            "FFFFB2",
+            "D8FFB2",
+            "B2FFB2",
+            "B2FFD8",
+            "B2FFFF",
+            "B2D8FF",
+            "B2B2FF",
+            "D8B2FF",
+            "FFB2FF",
+            "FFB2D8",
+            "B24747",
+            "B27C47",
+            "B2B247",
+            "7CB247",
+            "47B247",
+            "47B27C",
+            "47B2B2",
+            "477CB2",
+            "4747B2",
+            "7C47B2",
+            "B247B2",
+            "B2477C",
+            "FF0000",
+            "FF7F00",
+            "FFFF00",
+            "7FFF00",
+            "00FF00",
+            "00FF7F",
+            "00FFFF",
+            "007FFF",
+            "0000FF",
+            "7F00FF",
+            "FF00FF",
+            "FF007F",
+            "000000",
+            "929292",
+            "a9a9a9",
+            "C0C0C0",
+            "D6D6D6",
+            "FFFFFF",
+            "002b36",
+            "073642",
+            "586e75",
+            "657b83",
+            "839496",
+            "93a1a1",
+            "eee8d5",
+            "fdf6e3",
+            "b58900",
+            "cb4b16",
+            "dc322f",
+            "d33682",
+            "6c71c4",
+            "268bd2",
+            "2aa198",
+            "859900"]
+
+    def getColour(self, colourNumber):
+        # Get colour based on colour number (which starts at 1)
+        return self.colours[colourNumber - 1]
+
+    def getColourCount(self):
+        return len(self.colours)
+
+class iThoughtsShapes():
+    def __init__(self):
+		# Shapes as understood by iThoughts
+		self.shapes = [
+			"auto",
+			"rectangle",
+			"square",
+			"rounded",
+			"pill",
+			"parallelogram",
+			"diamond",
+			"triangle",
+			"oval",
+			"circle",
+			"underline",
+			"none",
+			"square bracket",
+			"curved bracket",
+		]
 
 
-class CSVTree(object):
+    def getShapes(self):
+        # Get shapes as a list
+        return self.shapes
+
+    def getShape(self,shapeNumber):
+        # Get shape based on shape number (which starts at 0)
+        return self.shapes[shapeNumber]
+
+    def getShapeCount(self):
+        return len(self.shapes)
+
+
+
+class CSVTree():
     def __init__(self, shape, colour, note, level, position, cell):
         """
         >>> csv_tree = CSVTree("shape", "colour", "note", "level", "position", "cell")
@@ -115,7 +217,7 @@ class CSVTree(object):
                         if set(action).issubset(set(string.hexdigits)):
                             self.data["colour"] = action
                     else:
-                        if action in shapes:
+                        if action in iThoughtsShapes.getShapes():
                             # Is a shape
                             self.data["shape"] = action
                         else:
@@ -125,7 +227,7 @@ class CSVTree(object):
 
                                 # We have an integer. If it is too big but not 6 digits
                                 # we flag an error and don't do the update
-                                if colourNumber > colourCount:
+                                if colourNumber > iThoughtsColours.getColourCount():
                                     sys.stderr.write(
                                         "Erroneous colour value "
                                         + str(colourNumber)
@@ -134,7 +236,7 @@ class CSVTree(object):
                                         + "').\n"
                                     )
                                 else:
-                                    self.data["colour"] = colours[colourNumber - 1]
+                                    self.data["colour"] = iThoughtsColours.getColour(colourNumber)
                             else:
                                 sys.stderr.write(
                                     "Erroneous action value "
@@ -619,91 +721,12 @@ def formatWhitespaceCharacters(whitespace):
 matchCriteria = []
 actionsLists = []
 
-# Shapes as understood by iThoughts
-shapes = [
-    "auto",
-    "rectangle",
-    "square",
-    "rounded",
-    "pill",
-    "parallelogram",
-    "diamond",
-    "triangle",
-    "oval",
-    "circle",
-    "underline",
-    "none",
-    "square bracket",
-    "curved bracket",
-]
-
-shapeCount = len(shapes)
-
-# Colours from iThoughts palette
-colours = [
-    "FFB2B2",
-    "FFD8B2",
-    "FFFFB2",
-    "D8FFB2",
-    "B2FFB2",  # 1 - 5
-    "B2FFD8",
-    "B2FFFF",
-    "B2D8FF",
-    "B2B2FF",
-    "D8B2FF",  # 6 - 10
-    "FFB2FF",
-    "FFB2D8",
-    "B24747",
-    "B27C47",
-    "B2B247",  # 11 - 15
-    "7CB247",
-    "47B247",
-    "47B27C",
-    "47B2B2",
-    "477CB2",  # 16 - 20
-    "4747B2",
-    "7C47B2",
-    "B247B2",
-    "B2477C",
-    "FF0000",  # 21 - 25
-    "FF7F00",
-    "FFFF00",
-    "7FFF00",
-    "00FF00",
-    "00FF7F",  # 26 - 30
-    "00FFFF",
-    "007FFF",
-    "0000FF",
-    "7F00FF",
-    "FF00FF",  # 31 - 35
-    "FF007F",
-    "000000",
-    "929292",
-    "a9a9a9",
-    "C0C0C0",  # 36 - 40
-    "D6D6D6",
-    "FFFFFF",
-    "002b36",
-    "073642",
-    "586e75",  # 41 - 45
-    "657b83",
-    "839496",
-    "93a1a1",
-    "eee8d5",
-    "fdf6e3",  # 46 - 50
-    "b58900",
-    "cb4b16",
-    "dc322f",
-    "d33682",
-    "6c71c4",  # 51 - 55
-    "268bd2",
-    "2aa198",
-    "859900",  # 56 - 58
-]
 
 if __name__ == "__main__":
-    colourCount = len(colours)
+    iThoughtsColours = iThoughtsColours()
     nextColour = 0
+
+    iThoughtsShapes = iThoughtsShapes()
     nextShape = 0
 
     # Heading for parameters display
@@ -737,10 +760,10 @@ if __name__ == "__main__":
                 actionList[actionNumber] = str(nextColour - 1)
                 nextColour += 1
             elif action in ("nextshape", "ns"):
-                actionList[actionNumber] = shapes[nextShape]
+                actionList[actionNumber] = iThoughtsShapes.getShape(nextShape)
                 nextShape += 1
             elif action == ("sameshape", "ss"):
-                actionList[actionNumber] = shapes[nextShape - 1]
+                actionList[actionNumber] = iThoughtsShapes.getShape(nextShape - 1)
                 nextShape += 1
 
         # Add actions list to list of actions lists
