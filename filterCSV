@@ -92,7 +92,7 @@ class iThoughtsColours:
         """Get the next colour number from the iThoughts palette
         >>> ithoughts_colours = iThoughtsColours()
         >>> ithoughts_colours.getSameColourNumber()
-        1
+        0
         """
         return self.colourNumber
 
