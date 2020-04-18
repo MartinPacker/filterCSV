@@ -34,26 +34,20 @@ filterCSV_level = "1.0"
 filterCSV_date = "17 April, 2020"
 
 class iThoughtsColours:
-    light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2
-                      B2FFD8 B2FFFF B2D8FF B2B2FF D8B2FF
-                      FFB2FF FFB2D8""".split()
-                 
-                 
-    dark_pastel = """B24747 B27C47 B2B247 7CB247 47B247
-                     47B27C 47B2B2 477CB2 4747B2 7C47B2
-                     B247B2 B2477C""".split()
-                    
-    saturated = """FF0000 FF7F00 FFFF00 7FFF00 00FF00
-                   00FF7F 00FFFF 007FFF 0000FF 7F00FF
-                   FF00FF FF007F""".split()
-                   
-    grayscale = """000000 929292 a9a9a9 C0C0C0 D6D6D6
-                   FFFFFF""".split()
-                   
-    solarized = """002b36 073642 586e75 657b83 839496
-                   93a1a1 eee8d5 fdf6e3 b58900 cb4b16
-                   dc322f d33682 6c71c4 268bd2 2aa198
-                   859900""".split()
+    light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
+                      B2FFFF B2D8FF B2B2FF D8B2FF FFB2FF FFB2D8""".split()
+
+    dark_pastel = """B24747 B27C47 B2B247 7CB247 47B247 47B27C
+                     47B2B2 477CB2 4747B2 7C47B2 B247B2 B2477C""".split()
+
+    saturated = """FF0000 FF7F00 FFFF00 7FFF00 00FF00 00FF7F
+                   00FFFF 007FFF 0000FF 7F00FF FF00FF FF007F""".split()
+
+    grayscale = """000000 929292 a9a9a9 C0C0C0 D6D6D6 FFFFFF""".split()
+
+    solarized = """002b36 073642 586e75 657b83 839496 93a1a1
+                   eee8d5 fdf6e3 b58900 cb4b16 dc322f d33682
+                   6c71c4 268bd2 2aa198 859900""".split()
     colours = light_pastel + dark_pastel + saturated + grayscale + solarized
 
     def __getitem__(self, key):
@@ -83,44 +77,55 @@ class iThoughtsColours:
         """
         return len(self.colours)
 
-class iThoughtsShapes():
-    def __init__(self):
-        # Shapes as understood by iThoughts
-        self.shapes = [
-            "auto",
-            "rectangle",
-            "square",
-            "rounded",
-            "pill",
-            "parallelogram",
-            "diamond",
-            "triangle",
-            "oval",
-            "circle",
-            "underline",
-            "none",
-            "square bracket",
-            "curved bracket",
-        ]
+class iThoughtsShapes:
+    # Shapes as understood by iThoughts
+    shapes = (
+        "auto",
+        "rectangle",
+        "square",
+        "rounded",
+        "pill",
+        "parallelogram",
+        "diamond",
+        "triangle",
+        "oval",
+        "circle",
+        "underline",
+        "none",
+        "square bracket",
+        "curved bracket",
+    )
 
+    def __contains__(self, item):
+        """Is item in self.shapes
+        >>> ithought_shapes = iThoughtsShapes()
+        >>> all(shape in ithought_shapes for shape
+        ...     in ('auto', 'triangle', 'none', 'curved bracket'))
+        True
+        """
+        return item in self.shapes
 
-    def getShapes(self):
-        # Get shapes as a list
-        return self.shapes
+    def __getitem__(self, key):
+        """Get shape based on shape number (which starts at 0)
+        >>> ithought_shapes = iThoughtsShapes()
+        >>> ithought_shapes[0]
+        'auto'
+        >>> ithought_shapes[-1]
+        'curved bracket'
+        """
+        return self.shapes[key]
 
-    def getShape(self,shapeNumber):
-        # Get shape based on shape number (which starts at 0)
-        return self.shapes[shapeNumber]
-
-    def getShapeCount(self):
+    def __len__(self):
+        """
+        >>> len(iThoughtsShapes())
+        14
+        """
         return len(self.shapes)
 
-
-
-class CSVTree():
+class CSVTree:
     def __init__(self, shape, colour, note, level, position, cell):
         """
-        >>> csv_tree = CSVTree("shape", "colour", "note", "level", "position", "cell")
+        >>> csv_tree = CSVTree("shape", "colour", "note", "level", 1, "cell")
         >>> csv_tree.data["shape"]
         'shape'
         """
@@ -148,15 +153,18 @@ class CSVTree():
         return self.childNodes
 
     def isMatch(self, criterion):
-        # Common method for establishing if a node matches some criterion, usually a regex
+        """
+        Common method for establishing if a node matches some criterion, usually a regex
+        """
         return (re.search(criterion, self.data["shape"])
                 or re.search(criterion, self.data["colour"])
                 or re.search(criterion, self.data["note"])
                 or re.search(criterion, self.data["cell"]))
 
     def applyFilter(self, criterion, actionsList):
-        # Apply filter to this node - if not tree root
-
+        """
+        Apply filter to this node - if not tree root
+        """
         propagate = True
         if self.data["level"] != -1:
             cellColumn = int(self.data["level"]) + levelColumn + 1
@@ -198,7 +206,7 @@ class CSVTree():
                         # 6-digit hexadecimal so is colour RGB value
                         self.data["colour"] = action
                     else:
-                        if action in iThoughtsShapes.getShapes():
+                        if action in iThoughtsShapes:
                             # Is a shape
                             self.data["shape"] = action
                         else:
@@ -329,7 +337,7 @@ class CSVTree():
                     + "* "
                     + self.data["cell"]
                 )
-                if note != "":
+                if note:
                     print("<br/><br/>" + note + "\n")
             else:
                 print(
@@ -339,7 +347,7 @@ class CSVTree():
                     + self.data["cell"]
                     + "\n"
                 )
-                if note != "":
+                if note:
                     print(note + "\n")
 
         for childNode in self.childNodes:
@@ -387,12 +395,8 @@ class CSVTree():
 
     def _exportToHTMLTable(self, maximumLevel, action):
         level = int(self.data["level"])
-
         # Determine the cell background colour
-        colour = self.data["colour"]
-        if colour == "":
-            colour = "FFFFFF"
-
+        colour = self.data["colour"] or "FFFFFF"
         # HTML table
         if level > -1:
             # Print table row start
@@ -417,7 +421,7 @@ class CSVTree():
 
             # Print any note as a final column
             note = self.data["note"]
-            if note != "":
+            if note:
                 print("<td>" + note + "</td>")
 
             # Print table row end
@@ -451,7 +455,7 @@ class CSVTree():
             )
 
             # Print any note
-            if note != "":
+            if note:
                 print(indent + "  <br/><br/>" + note)
 
             needListElements = len(self.childNodes) > 0
@@ -521,7 +525,7 @@ class CSVTree():
                     + "'>"
                 )
 
-            if note != "":
+            if note:
                 print(indent + "  <richcontent TYPE='NOTE'><html>")
                 print(indent + "    <head></head>")
                 print(indent + "    <body>")
@@ -585,7 +589,7 @@ class CSVTree():
                     + "'"
                 )
 
-            if note != "":
+            if note:
                 printLine = printLine + " Note='" + note + "'"
 
             print(printLine + ">")
@@ -741,10 +745,10 @@ if __name__ == "__main__":
                 actionList[actionNumber] = str(nextColour - 1)
                 nextColour += 1
             elif action in ("nextshape", "ns"):
-                actionList[actionNumber] = iThoughtsShapes.getShape(nextShape)
+                actionList[actionNumber] = iThoughtsShapes[nextShape]
                 nextShape += 1
             elif action == ("sameshape", "ss"):
-                actionList[actionNumber] = iThoughtsShapes.getShape(nextShape - 1)
+                actionList[actionNumber] = iThoughtsShapes[nextShape - 1]
                 nextShape += 1
 
         # Add actions list to list of actions lists
@@ -836,10 +840,10 @@ if __name__ == "__main__":
         # Add a level column if one is not already present, and move the text into the right
         # level
         emptyCell = ""
-        for rowNumber in range(len(csvRows)):
+        for rowNumber, csvRow in enumerate(csvRows):
             if rowNumber > 0:
                 # A data row so work out how many levels deep it is indented
-                cell = csvRows[rowNumber][0]
+                cell = csvRow[0]
                 rowIndent = len(cell) - len(cell.lstrip())
                 if rowIndent % indent > 0:
                     sys.stderr.write("Bad indentation: ")
@@ -988,9 +992,8 @@ if __name__ == "__main__":
     csvTree = CSVTree("", "", "", currentLevel, "", "")
     currentNode = csvTree
 
-    for rowNumber in range(1, len(csvRows)):
+    for rowNumber, row in enumerate(csvRows[1:]):
         # Extract information from this row
-        row = csvRows[rowNumber]
         level = int(row[levelColumn])
         shape = row[shapeColumn]
         colour = row[colourColumn]
@@ -1030,8 +1033,7 @@ if __name__ == "__main__":
     # (A row could match more than one and a later one overrides an earlier one)
     # In some cases the "match criterion" is a command and the "actions list"
     # contains parameters for that command. e.g. "markdown"
-    for parmPair in range(len(matchCriteria)):
-        matchCriterion = matchCriteria[parmPair]
+    for parmPair, matchCriterion in enumerate(matchCriteria):
         actionsList = actionsLists[parmPair]
         if actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
