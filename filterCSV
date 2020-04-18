@@ -34,18 +34,27 @@ filterCSV_level = "1.0"
 filterCSV_date = "17 April, 2020"
 
 class iThoughtsColours:
-    colours = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2
-                 B2FFD8 B2FFFF B2D8FF B2B2FF D8B2FF
-                 FFB2FF FFB2D8 B24747 B27C47 B2B247
-                 7CB247 47B247 47B27C 47B2B2 477CB2
-                 4747B2 7C47B2 B247B2 B2477C FF0000
-                 FF7F00 FFFF00 7FFF00 00FF00 00FF7F
-                 00FFFF 007FFF 0000FF 7F00FF FF00FF
-                 FF007F 000000 929292 a9a9a9 C0C0C0
-                 D6D6D6 FFFFFF 002b36 073642 586e75
-                 657b83 839496 93a1a1 eee8d5 fdf6e3
-                 b58900 cb4b16 dc322f d33682 6c71c4
-                 268bd2 2aa198 859900""".split()
+    light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2
+                      B2FFD8 B2FFFF B2D8FF B2B2FF D8B2FF
+                      FFB2FF FFB2D8""".split()
+                 
+                 
+    dark_pastel = """B24747 B27C47 B2B247 7CB247 47B247
+                     47B27C 47B2B2 477CB2 4747B2 7C47B2
+                     B247B2 B2477C""".split()
+                    
+    saturated = """FF0000 FF7F00 FFFF00 7FFF00 00FF00
+                   00FF7F 00FFFF 007FFF 0000FF 7F00FF
+                   FF00FF FF007F""".split()
+                   
+    grayscale = """000000 929292 a9a9a9 C0C0C0 D6D6D6
+                   FFFFFF""".split()
+                   
+    solarized = """002b36 073642 586e75 657b83 839496
+                   93a1a1 eee8d5 fdf6e3 b58900 cb4b16
+                   dc322f d33682 6c71c4 268bd2 2aa198
+                   859900""".split()
+    colours = light_pastel + dark_pastel + saturated + grayscale + solarized
 
     def __getitem__(self, key):
         """
