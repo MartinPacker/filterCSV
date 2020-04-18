@@ -147,7 +147,7 @@ class iThoughtsShapes:
         """Get the next shape number from the iThoughts list
         >>> ithoughts_shapes = iThoughtsShapes()
         >>> ithoughts_shapes.getNextShapeNumber()
-        'rectangle'
+        1
         """
         self.shapeNumber += 1
         return self.shapeNumber
@@ -156,7 +156,7 @@ class iThoughtsShapes:
         """Get the same shape number from the iThoughts list
         >>> ithoughts_shapes = iThoughtsShapes()
         >>> ithoughts_shapes.getSameShapeNumber()
-        'auto'
+        0
         """
         return self.shapeNumber
 
