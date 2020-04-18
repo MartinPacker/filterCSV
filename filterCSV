@@ -31,7 +31,7 @@ import sys
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.0"
-filterCSV_date = "17 April, 2020"
+filterCSV_date = "18 April, 2020"
 
 class iThoughtsColours:
     light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
@@ -49,6 +49,8 @@ class iThoughtsColours:
                    eee8d5 fdf6e3 b58900 cb4b16 dc322f d33682
                    6c71c4 268bd2 2aa198 859900""".split()
     colours = light_pastel + dark_pastel + saturated + grayscale + solarized
+    
+    colourNumber = 0
 
     def __getitem__(self, key):
         """
@@ -76,6 +78,21 @@ class iThoughtsColours:
         58
         """
         return len(self.colours)
+
+    def getNextColourNumber(self):
+        """Get the next colour number from the iThoughts palette
+        >>> nextColourNumber = iThoughtsColours().getNextColourNumber()
+        1
+        """
+        self.colourNumber += 1
+        return self.colourNumber
+
+    def getSameColourNumber(self):
+        """Get the next colour number from the iThoughts palette
+        >>> sameColourNumber = iThoughtsColours().getSameColourNumber()
+        1
+        """
+        return self.colourNumber
 
 class iThoughtsShapes:
     # Shapes as understood by iThoughts
@@ -205,35 +222,34 @@ class CSVTree:
                     elif (len(action) == 6) & set(action).issubset(set(string.hexdigits)):
                         # 6-digit hexadecimal so is colour RGB value
                         self.data["colour"] = action
-                    else:
-                        if action in iThoughtsShapes:
-                            # Is a shape
-                            self.data["shape"] = action
-                        else:
-                            if action.isdigit():
-                                # Attempt to parse as from the colour palette
-                                colourNumber = int(action)
+                    elif action in iThoughtsShapes:
+                        # Is a shape
+                        self.data["shape"] = action
+                    elif action.isdigit():
+                        # Attempt to parse as from the colour palette
+                        colourNumber = int(action)
 
-                                # We have an integer. If it is too big but not 6 digits
-                                # we flag an error and don't do the update
-                                if colourNumber > len(iThoughtsColours):
-                                    sys.stderr.write(
-                                        "Erroneous colour value "
-                                        + str(colourNumber)
-                                        + " (Pattern was: '"
-                                        + criterion.pattern
-                                        + "').\n"
-                                    )
-                                else:
-                                    self.data["colour"] = iThoughtsColours.getColour(colourNumber)
-                            else:
-                                sys.stderr.write(
-                                    "Erroneous action value "
-                                    + str(action)
-                                    + " (Pattern was: '"
-                                    + criterion.pattern
-                                    + "').\n"
-                                )
+                        # We have an integer. If it is too big but not 6 digits
+                        # we flag an error and don't do the update
+                        if colourNumber > len(iThoughtsColours):
+                            sys.stderr.write(
+                                "Erroneous colour value "
+                                + str(colourNumber)
+                                + " (Pattern was: '"
+                                + criterion.pattern
+                                + "').\n"
+                            )
+                        else:
+                            self.data["colour"] = iThoughtsColours.getColour(colourNumber)
+                            sys.stderr.write(str(colourNumber)+" "+iThoughtsColours.getColour(colourNumber)+"\n")
+                    else:
+                        sys.stderr.write(
+                            "Erroneous action value "
+                            + str(action)
+                            + " (Pattern was: '"
+                            + criterion.pattern
+                            + "').\n"
+                        )
 
         # Apply filter to children, recursively - if propagation is indicated
         if propagate is True:
@@ -709,7 +725,6 @@ actionsLists = []
 
 if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
-    nextColour = 0
 
     iThoughtsShapes = iThoughtsShapes()
     nextShape = 0
@@ -739,11 +754,9 @@ if __name__ == "__main__":
         for actionNumber in range(len(actionList)):
             action = actionList[actionNumber]
             if action in ("nextcolour", "nextcolor", "nc"):
-                actionList[actionNumber] = str(nextColour)
-                nextColour += 1
+                actionList[actionNumber] = str(iThoughtsColours.getNextColourNumber())
             elif action in ("samecolour", "samecolor", "sc"):
-                actionList[actionNumber] = str(nextColour - 1)
-                nextColour += 1
+                actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
             elif action in ("nextshape", "ns"):
                 actionList[actionNumber] = iThoughtsShapes[nextShape]
                 nextShape += 1
