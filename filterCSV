@@ -54,20 +54,20 @@ class iThoughtsColours:
 
     def __getitem__(self, key):
         """
-        >>> ithought_colours = iThoughtsColours()
-        >>> ithought_colours[0]
+        >>> ithoughts_colours = iThoughtsColours()
+        >>> ithoughts_colours[0]
         'FFB2B2'
-        >>> ithought_colours[-1]
+        >>> ithoughts_colours[-1]
         '859900'
         """
         return self.colours[key]
 
     def getColour(self, colourNumber):
         """Get colour based on colour number (which starts at 1)
-        >>> ithought_colours = iThoughtsColours()
-        >>> ithought_colours.getColour(1)
+        >>> ithoughts_colours = iThoughtsColours()
+        >>> ithoughts_colours.getColour(1)
         'FFB2B2'
-        >>> ithought_colours.getColour(58)
+        >>> ithoughts_colours.getColour(58)
         '859900'
         """
         return self[colourNumber - 1]
@@ -81,7 +81,8 @@ class iThoughtsColours:
 
     def getNextColourNumber(self):
         """Get the next colour number from the iThoughts palette
-        >>> nextColourNumber = iThoughtsColours().getNextColourNumber()
+        >>> ithoughts_colours = iThoughtsColours()
+        >>> nextColourNumber = ithoughts_colours.getNextColourNumber()
         1
         """
         self.colourNumber += 1
@@ -89,7 +90,8 @@ class iThoughtsColours:
 
     def getSameColourNumber(self):
         """Get the next colour number from the iThoughts palette
-        >>> sameColourNumber = iThoughtsColours().getSameColourNumber()
+        >>> ithoughts_colours = iThoughtsColours()
+        >>> sameColourNumber = ithoughts_colours.getSameColourNumber()
         1
         """
         return self.colourNumber
@@ -115,8 +117,8 @@ class iThoughtsShapes:
 
     def __contains__(self, item):
         """Is item in self.shapes
-        >>> ithought_shapes = iThoughtsShapes()
-        >>> all(shape in ithought_shapes for shape
+        >>> ithoughts_shapes = iThoughtsShapes()
+        >>> all(shape in ithoughts_shapes for shape
         ...     in ('auto', 'triangle', 'none', 'curved bracket'))
         True
         """
@@ -124,10 +126,10 @@ class iThoughtsShapes:
 
     def __getitem__(self, key):
         """Get shape based on shape number (which starts at 0)
-        >>> ithought_shapes = iThoughtsShapes()
-        >>> ithought_shapes[0]
+        >>> ithoughts_shapes = iThoughtsShapes()
+        >>> ithoughts_shapes[0]
         'auto'
-        >>> ithought_shapes[-1]
+        >>> ithoughts_shapes[-1]
         'curved bracket'
         """
         return self.shapes[key]
