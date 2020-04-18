@@ -89,7 +89,7 @@ class iThoughtsColours:
         return self.colourNumber
 
     def getSameColourNumber(self):
-        """Get the next colour number from the iThoughts palette
+        """Get the same colour number from the iThoughts palette
         >>> ithoughts_colours = iThoughtsColours()
         >>> ithoughts_colours.getSameColourNumber()
         0
@@ -114,6 +114,8 @@ class iThoughtsShapes:
         "square bracket",
         "curved bracket",
     )
+    
+    shapeNumber = 0
 
     def __contains__(self, item):
         """Is item in self.shapes
@@ -140,6 +142,23 @@ class iThoughtsShapes:
         14
         """
         return len(self.shapes)
+        
+    def getNextShapeNumber(self):
+        """Get the next shape number from the iThoughts list
+        >>> ithoughts_shapes = iThoughtsShapes()
+        >>> ithoughts_shapes.getNextShapeNumber()
+        'rectangle'
+        """
+        self.shapeNumber += 1
+        return self.shapeNumber
+
+    def getSameShapeNumber(self):
+        """Get the same shape number from the iThoughts list
+        >>> ithoughts_shapes = iThoughtsShapes()
+        >>> ithoughts_shapes.getSameShapeNumber()
+        'auto'
+        """
+        return self.shapeNumber
 
 class CSVTree:
     def __init__(self, shape, colour, note, level, position, cell):
@@ -729,7 +748,6 @@ if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
 
     iThoughtsShapes = iThoughtsShapes()
-    nextShape = 0
 
     # Heading for parameters display
     sys.stderr.write("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n\n")
@@ -760,11 +778,9 @@ if __name__ == "__main__":
             elif action in ("samecolour", "samecolor", "sc"):
                 actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
             elif action in ("nextshape", "ns"):
-                actionList[actionNumber] = iThoughtsShapes[nextShape]
-                nextShape += 1
-            elif action == ("sameshape", "ss"):
-                actionList[actionNumber] = iThoughtsShapes[nextShape - 1]
-                nextShape += 1
+                actionList[actionNumber] = iThoughtsShapes[iThoughtsShapes.getNextShapeNumber()]
+            elif action in ("sameshape", "ss"):
+                actionList[actionNumber] = iThoughtsShapes[iThoughtsShapes.getSameShapeNumber()]
 
         # Add actions list to list of actions lists
         actionsLists.append(actionList)
