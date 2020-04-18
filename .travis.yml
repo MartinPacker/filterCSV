@@ -11,6 +11,7 @@ jobs:
     - script: cat tests/mdTest3.csv   | ./filterCSV xml freemind        # Test of Freemind XML export
     - script: cat tests/test1.csv     | ./filterCSV 'A2A|X' 'keep'      # Test of 'keep' - with two surviving trees
     - script: cat tests/promotion.csv | ./filterCSV promote 2           # Test of promote
+    - script: pydoc ./filterCSV.py
 before_script:
   - flake8 --count --select=E9,F63,F7,F82 --show-source --statistics filterCSV
   - # ln -s filterCSV filterCSV.py
