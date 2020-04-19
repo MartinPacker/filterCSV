@@ -117,7 +117,8 @@ expected_out = """
 
 def test_file_processing(stdin_path="tests/test1.csv",
                          args=["./filterCSV", "^A1$", "3 note"],
-                         expected=expected):
+                         expected_err=expected_err,
+                        expected_out=expected_out):
     with open(stdin_path) as in_file:
         # stdin = in_file.read()
         # stdout = None
