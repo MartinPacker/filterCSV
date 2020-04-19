@@ -304,7 +304,7 @@ class CSVTree:
         >>> csv_tree = CSVTree("shape", "colour", "note", 1, 1, "cell")
         >>> csv_tree.getCounter()
         Counter({1: 1})
-        >>> csv_tree.addChild(CSVTree("shape", "colour", "note", 2, 7, "cell"))
+        >>> _ = csv_tree.addChild(CSVTree("shape", "colour", "note", 2, 7, "cell"))
         >>> csv_tree.getCounter()
         Counter({1: 1, 2: 1})
         """
