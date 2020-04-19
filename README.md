@@ -10,7 +10,7 @@ The CSV format that iThoughts understands has a tree-like structure. As well as 
 
 filterCSV is a set of tools to automatically edit a CSV file in the form used in iThoughts. filterCSV is written in Python 3. It has been tested on a Raspberry Pi and a machine running Mac OS. Currently it comprises one program.
 
-Based on matching regular expressions you can:
+Based on matching regular expressions you can do things such as:
 
 * Set colours for nodes
 * Change their shape
@@ -20,6 +20,9 @@ Based on matching regular expressions you can:
 You can check the structure of the input CSV file is good for importing into iThoughts.
 
 You can export the CSV file as a Markdown file consisting of headings and bulleted lists.
+
+**NOTE:** In this document we will use terms such as "mind map" and "tree". Structurally the data represents a tree. \
+It might or might not be used for mapping your mind.
 
 ## Using filterCSV
 
@@ -43,7 +46,7 @@ If you want to match a cell's text exactly you can code something like `^A1$` wh
 
 ### Actions
 
-Actions can be:
+Actions you can take include:
 
 * Specify a colour number
 * Specify a colour RGB value
@@ -52,6 +55,7 @@ Actions can be:
 * Specify a shape
 * Specify a position
 * Promote all subtrees at a certain level by 1 level
+* Computing basic statistics about the mind map
 
 In the following action specifications are case-insensitive; If you specify, for example, an action in upper case it will be converted to lower case before being applied to matching nodes.
 
@@ -118,6 +122,28 @@ If you specify, for example
     filterCSV promote 2 < input.csv > output.csv
 
 The nodes at level 1 are deleted and all their direct children move up to level 1. These children might be the root of subtrees. All nodes in the subtrees are also promoted by 1 level.
+
+####  Computing Statistics About A Mind Map
+
+If you specify `stats` it will write basic statistics to an output file in one of the following forms:
+
+* Flat file - if you specify `stats text`
+* HTML table - if you specify `stats html`
+* Markdown table - if you specify `stats markdown`
+* Comma-Separated Value (CSV) - if you specify `stats csv`
+
+The statistics are (for each level):
+
+* Number of nodes at that level
+* Number of distinct text values at that level
+
+Here is an example - produced by specifying `stats text`:
+
+    Level Nodes Distinct Nodes
+        0     2              1
+        1     2              2
+        2     1              1
+        3     1              1
 
 ### Input Files
 
