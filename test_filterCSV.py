@@ -4,6 +4,7 @@
 # ln -s ../filterCSV filterCSV.py  # make a symlink from ../filterCSV to ./filterCSV.py
 
 import string
+import subprocess
 
 import pytest
 
@@ -92,3 +93,32 @@ def test_no_spaces(whitespace=string.ascii_letters+string.digits+string.punctuat
     # "a" is in both <space> and <tab>
     assert "c" not in s
     assert "e" not in s
+
+
+expected = """
+Criterion                                Actions
+---------                                -------
+^A1$                                     3 note
+
+
+3 FFFFB2
+"colour","note","position","shape","level","level0","level1","level2","level3","level4","level5","level6","level7","level8","level9","level10","level11","level12","level13","level14","level15","level16","level17","level18","level19","level20"
+"","","","","0","A"
+"FFFFB2","Matched ^A1$","","","1","","A1"
+"","","","","1","","A2"
+"","","","","2","","","A2A"
+"","","","","3","","","","A2A1"
+"","","","square","0","X"
+"""
+
+
+def test_file_processing(stdin="tests/test1.csv",
+                         args=["./filterCSV", "^A1$", "3 note"],
+                         expected=expected):
+    with open(in_file_path) as in_file:
+        data = in_file.read()
+    stdout = None
+    return_code = subprocess.run(args, stdin=stdin, stdout)
+    assert return_code == 0, (" ".join(args), return_code))
+    assert expected in stdout, f"{expected}\nis not in\n{stdout}
+    
