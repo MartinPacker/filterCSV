@@ -772,7 +772,7 @@ class CSVTree:
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print(str(level).rjust(5, " ") + " " + str(levelNodes).rjust(5, " ") + " " + str(distinctLevelNodes).rjust(14," "))
+                print(f"{level:>5} {levelNodes:>5} {distinctLevelNodes:>14}")
         else:
             sys.stderr.write("Invalid format for 'stats': " + firstAction+"\n")
                 
