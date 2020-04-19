@@ -116,9 +116,9 @@ def test_file_processing(stdin_path="tests/test1.csv",
                          args=["./filterCSV", "^A1$", "3 note"],
                          expected=expected):
     with open(stdin_path) as in_file:
-        stdin = in_file.read()
-    stdout = None
-    return_code = subprocess.run(args, stdin=stdin, stdout=stdout)
-    assert return_code == 0, (" ".join(args), return_code)
-    assert expected in stdout, f"{expected}\nis not in\n{stdout}"
+        # stdin = in_file.read()
+        # stdout = None
+        cp = subprocess.run(args, text=True, stdin=in_file)
+    assert cp.returncode == 0, cp
+    assert expected in cp.stdout, f"{expected}\nis not in\n{cp.stdout}"
     
