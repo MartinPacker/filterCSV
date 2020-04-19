@@ -120,5 +120,5 @@ def test_file_processing(stdin="tests/test1.csv",
     stdout = None
     return_code = subprocess.run(args, stdin=stdin, stdout)
     assert return_code == 0, (" ".join(args), return_code)
-    assert expected in stdout, f"{expected}\nis not in\n{stdout}
+    assert expected in stdout, f"{expected}\nis not in\n{stdout}"
     
