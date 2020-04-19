@@ -27,6 +27,7 @@ import csv
 import re
 import string
 import sys
+from collections import Counter
 
 # from CSVTree import CSVTree
 
@@ -297,6 +298,21 @@ class CSVTree:
             child.writeCSVTree(outputArray)
 
         return outputArray
+    
+    def getCounter(self, counter = None):
+        """
+        >>> csv_tree = CSVTree("shape", "colour", "note", 1, 1, "cell")
+        >>> csv_tree.getCounter()
+        Counter({1: 1})
+        >>> csv_tree.addChild(CSVTree("shape", "colour", "note", 2, 7, "cell"))
+        >>> csv_tree.getCounter()
+        Counter({1: 1, 2: 1})
+        """
+        counter = counter or Counter()
+        counter[self["level"]] += 1
+        for child in self.childNodes:
+            counter = child.writeCSVTree(counter)
+        return counter
 
     def checkHierarchy(self, actionsList):
         sys.stderr.write("Beginning Level Check\n")
