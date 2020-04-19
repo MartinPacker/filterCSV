@@ -311,7 +311,7 @@ class CSVTree:
         counter = counter or Counter()
         counter[self.data["level"]] += 1
         for child in self.childNodes:
-            counter = child.writeCSVTree(counter)
+            child.writeCSVTree(counter)
         return counter
 
     def checkHierarchy(self, actionsList):
