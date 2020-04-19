@@ -732,14 +732,15 @@ class CSVTree:
         statistics = self.getStatistics()
         
         # Output the statistics in the right format
-        print("'Level','Nodes','Distinct Nodes'")
-        
-        for level in range(0,21):
-            levelNodes = statistics[0][level]
-            if levelNodes == 0:
-                break
-            distinctLevelNodes=statistics[1][level]
-            print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
+        if actionslist[0] == "csv":
+			print("'Level','Nodes','Distinct Nodes'")
+		
+			for level in range(0,21):
+				levelNodes = statistics[0][level]
+				if levelNodes == 0:
+					break
+				distinctLevelNodes=statistics[1][level]
+				print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
 
 
     def getStatistics(self):
