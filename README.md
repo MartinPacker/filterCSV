@@ -8,7 +8,7 @@ The CSV format that iThoughts understands has a tree-like structure. As well as 
 
 ## About filterCSV
 
-filterCSV is a set of tools to automatically edit a CSV file in the form used in iThoughts. filterCSV is written in Python 3. It has been tested on a Raspberry Pi and a machine running Mac OS. Currently it comprises one program.
+filterCSV is a set of tools to automatically edit a CSV file in the form used in iThoughts. filterCSV is written in Python 3.6+. It has been tested on a Raspberry Pi and a machine running macOS.
 
 Based on matching regular expressions you can:
 
