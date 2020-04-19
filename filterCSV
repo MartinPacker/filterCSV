@@ -732,15 +732,30 @@ class CSVTree:
         statistics = self.getStatistics()
         
         # Output the statistics in the right format
-        if actionslist[0] == "csv":
-			print("'Level','Nodes','Distinct Nodes'")
-		
-			for level in range(0,21):
-				levelNodes = statistics[0][level]
-				if levelNodes == 0:
-					break
-				distinctLevelNodes=statistics[1][level]
-				print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
+        firstAction = actionslist[0]
+        if firstAction == "csv":
+            print("'Level','Nodes','Distinct Nodes'")
+        
+            for level in range(0,21):
+                levelNodes = statistics[0][level]
+                if levelNodes == 0:
+                    break
+                distinctLevelNodes=statistics[1][level]
+                print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
+        elif firstAction == "html":
+            print("<table>")
+            print("<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>")
+            for level in range(0,21):
+                levelNodes = statistics[0][level]
+                if levelNodes == 0:
+                    break
+                distinctLevelNodes=statistics[1][level]
+                print("<tr>")
+                print("<td>" + str(level) + "</td>")
+                print("<td>" + str(levelNodes) + "</td>")
+                print("<td>" + str(distinctLevelNodes) + "</td>")
+                print("</tr>")
+            print("</table>")
 
 
     def getStatistics(self):
@@ -748,8 +763,8 @@ class CSVTree:
         nodesAtLevel = []
         distinctNodeValuesAtLevel = []
         for level in range(0,21):
-        	nodesAtLevel.append(0)
-	        distinctNodeValuesAtLevel.append([])
+            nodesAtLevel.append(0)
+            distinctNodeValuesAtLevel.append([])
         
         # Walk the tree, updating statistics
         [nodesAtLevel, distinctNodeValuesAtLevel] = self._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
@@ -757,7 +772,7 @@ class CSVTree:
         # Coalesce the sets of node values into counts
         distinctNodesAtLevel = []
         for level in range(0,21):
-        	distinctNodesAtLevel.append(len(distinctNodeValuesAtLevel[level]))
+            distinctNodesAtLevel.append(len(distinctNodeValuesAtLevel[level]))
         
         # Return the statistics:
         #    Count of nodes at each level
@@ -767,13 +782,13 @@ class CSVTree:
     def _getStatistics(self, nodesAtLevel, distinctNodeValuesAtLevel):
         level = int(self.data["level"])
         if level > -1:
-        	# Increment count of nodes at this level
+            # Increment count of nodes at this level
             nodesAtLevel[level] += 1
             
             # Add cell value to the list for this level - if it's not already in it
             cellValue = self.data['cell']
             if cellValue not in distinctNodeValuesAtLevel[level]:
-	            distinctNodeValuesAtLevel[level].append(cellValue)
+                distinctNodeValuesAtLevel[level].append(cellValue)
                
         for childNode in self.childNodes:
             [nodesAtLevel, distinctNodeValuesAtLevel] = childNode._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
