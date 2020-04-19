@@ -112,10 +112,10 @@ Criterion                                Actions
 """
 
 
-def test_file_processing(stdin="tests/test1.csv",
+def test_file_processing(stdin_path="tests/test1.csv",
                          args=["./filterCSV", "^A1$", "3 note"],
                          expected=expected):
-    with open(in_file_path) as in_file:
+    with open(stdin_path) as in_file:
         data = in_file.read()
     stdout = None
     return_code = subprocess.run(args, stdin=stdin, stdout=stdout)
