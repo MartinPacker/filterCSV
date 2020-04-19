@@ -102,7 +102,7 @@ Criterion                                Actions
 
 
 3 FFFFB2
-"""
+""".strip()
 
 expected_out = """
 "colour","note","position","shape","level","level0","level1","level2","level3","level4","level5","level6","level7","level8","level9","level10","level11","level12","level13","level14","level15","level16","level17","level18","level19","level20"
@@ -112,7 +112,7 @@ expected_out = """
 "","","","","2","","","A2A"
 "","","","","3","","","","A2A1"
 "","","","square","0","X"
-"""
+""".strip()
 
 
 def test_file_processing(stdin_path="tests/test1.csv",
