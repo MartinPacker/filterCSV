@@ -741,7 +741,7 @@ class CSVTree:
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
+                print(str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes))
         elif firstAction == "html":
             print("<table>")
             print("<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>")
@@ -756,6 +756,27 @@ class CSVTree:
                 print("<td>" + str(distinctLevelNodes) + "</td>")
                 print("</tr>")
             print("</table>")
+        elif firstAction == "markdown":
+            print("|Level|Nodes|Distinct Nodes|")
+            print("|-:|-:|-:|")
+            for level in range(0,21):
+                levelNodes = statistics[0][level]
+                if levelNodes == 0:
+                    break
+                distinctLevelNodes=statistics[1][level]
+                print("|" + str(level) + "|" + str(levelNodes) + "|" + str(distinctLevelNodes)+"|")
+        elif firstAction == "text":
+            print("Level Nodes Distinct Nodes")
+            for level in range(0,21):
+                levelNodes = statistics[0][level]
+                if levelNodes == 0:
+                    break
+                distinctLevelNodes=statistics[1][level]
+                print(str(level).rjust(5, " ") + " " + str(levelNodes).rjust(5, " ") + " " + str(distinctLevelNodes).rjust(14," "))
+        else:
+            sys.stderr.write("Invalid format for 'stats': " + firstAction+"\n")
+                
+        
 
 
     def getStatistics(self):
