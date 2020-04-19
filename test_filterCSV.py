@@ -95,13 +95,16 @@ def test_no_spaces(whitespace=string.ascii_letters+string.digits+string.punctuat
     assert "e" not in s
 
 
-expected = """
+expected_err = """
 Criterion                                Actions
 ---------                                -------
 ^A1$                                     3 note
 
 
 3 FFFFB2
+"""
+
+expected_out = """
 "colour","note","position","shape","level","level0","level1","level2","level3","level4","level5","level6","level7","level8","level9","level10","level11","level12","level13","level14","level15","level16","level17","level18","level19","level20"
 "","","","","0","A"
 "FFFFB2","Matched ^A1$","","","1","","A1"
@@ -118,7 +121,9 @@ def test_file_processing(stdin_path="tests/test1.csv",
     with open(stdin_path) as in_file:
         # stdin = in_file.read()
         # stdout = None
-        cp = subprocess.run(args, text=True, stdin=in_file)
+        cp = subprocess.run(args, capture_output=True, text=True, stdin=in_file)
     assert cp.returncode == 0, cp
-    assert expected in cp.stdout, f"{expected}\nis not in\n{cp.stdout}"
+    assert cp.stderr, cp.stderr
+    assert cp.stdout, cp.stdout
+    assert expected_out in cp.stdout, f"{expected_out}\nis not in\n{cp.stdout}"
     
