@@ -724,6 +724,40 @@ class CSVTree:
                 nodes = childNode._findNodesAtLevel(level, nodes)
 
         return nodes
+    
+    def writeStatistics(self, actionslist):
+        # Write statistics in one of a number of formats
+        
+        # Get the statistics array
+        statistics = self.getStatistics()
+        
+        # Output the statistics in the right format
+        sys.stderr.write("'Level','Nodes'\n")
+        
+        for level in range(0,21):
+            levelNodes = statistics[level]
+            if levelNodes == 0:
+                break
+            sys.stderr.write(str(level)+","+str(levelNodes)+"\n")
+        sys.stderr.write("\n\n")
+
+    def getStatistics(self):
+        # Prime statistics array
+        nodesAtLevel = [0] * 21
+        
+        nodesAtLevel = self._getStatistics(nodesAtLevel)
+        
+        return nodesAtLevel
+        
+    def _getStatistics(self, nodesAtLevel):
+        level = int(self.data["level"])
+        if level > -1:
+            nodesAtLevel[level] += 1
+               
+        for childNode in self.childNodes:
+            nodesAtLevel = childNode._getStatistics(nodesAtLevel)
+                   
+        return nodesAtLevel
 
 
 def formatWhitespaceCharacters(whitespace):
@@ -1081,6 +1115,8 @@ if __name__ == "__main__":
             sys.exit()
         elif matchCriterion.pattern.lower() == "promote":
             csvTree.promoteLevel(actionsList)
+        elif matchCriterion.pattern.lower() == "stats":
+            csvTree.writeStatistics(actionsList)
         else:
             csvTree.applyFilter(matchCriterion, actionsList)
 
