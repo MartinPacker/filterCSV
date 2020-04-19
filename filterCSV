@@ -309,7 +309,7 @@ class CSVTree:
         Counter({1: 1, 2: 1})
         """
         counter = counter or Counter()
-        counter[self["level"]] += 1
+        counter[self.data["level"]] += 1
         for child in self.childNodes:
             counter = child.writeCSVTree(counter)
         return counter
