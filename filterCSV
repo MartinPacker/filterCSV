@@ -732,32 +732,52 @@ class CSVTree:
         statistics = self.getStatistics()
         
         # Output the statistics in the right format
-        sys.stderr.write("'Level','Nodes'\n")
+        print("'Level','Nodes','Distinct Nodes'")
         
         for level in range(0,21):
-            levelNodes = statistics[level]
+            levelNodes = statistics[0][level]
             if levelNodes == 0:
                 break
-            sys.stderr.write(str(level)+","+str(levelNodes)+"\n")
-        sys.stderr.write("\n\n")
+            distinctLevelNodes=statistics[1][level]
+            print(str(level)+","+str(levelNodes)+","+str(distinctLevelNodes))
+
 
     def getStatistics(self):
-        # Prime statistics array
-        nodesAtLevel = [0] * 21
+        # Prime statistics arrays
+        nodesAtLevel = []
+        distinctNodeValuesAtLevel = []
+        for level in range(0,21):
+        	nodesAtLevel.append(0)
+	        distinctNodeValuesAtLevel.append([])
         
-        nodesAtLevel = self._getStatistics(nodesAtLevel)
+        # Walk the tree, updating statistics
+        [nodesAtLevel, distinctNodeValuesAtLevel] = self._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
         
-        return nodesAtLevel
+        # Coalesce the sets of node values into counts
+        distinctNodesAtLevel = []
+        for level in range(0,21):
+        	distinctNodesAtLevel.append(len(distinctNodeValuesAtLevel[level]))
         
-    def _getStatistics(self, nodesAtLevel):
+        # Return the statistics:
+        #    Count of nodes at each level
+        #    Count of unique node values at each level
+        return [nodesAtLevel,distinctNodesAtLevel]
+        
+    def _getStatistics(self, nodesAtLevel, distinctNodeValuesAtLevel):
         level = int(self.data["level"])
         if level > -1:
+        	# Increment count of nodes at this level
             nodesAtLevel[level] += 1
+            
+            # Add cell value to the list for this level - if it's not already in it
+            cellValue = self.data['cell']
+            if cellValue not in distinctNodeValuesAtLevel[level]:
+	            distinctNodeValuesAtLevel[level].append(cellValue)
                
         for childNode in self.childNodes:
-            nodesAtLevel = childNode._getStatistics(nodesAtLevel)
+            [nodesAtLevel, distinctNodeValuesAtLevel] = childNode._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
                    
-        return nodesAtLevel
+        return [nodesAtLevel, distinctNodeValuesAtLevel]
 
 
 def formatWhitespaceCharacters(whitespace):
@@ -1117,6 +1137,7 @@ if __name__ == "__main__":
             csvTree.promoteLevel(actionsList)
         elif matchCriterion.pattern.lower() == "stats":
             csvTree.writeStatistics(actionsList)
+            sys.exit()
         else:
             csvTree.applyFilter(matchCriterion, actionsList)
 
