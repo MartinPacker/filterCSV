@@ -18,3 +18,5 @@ before_script:
   - # ln -s filterCSV filterCSV.py
   - ls -la ; ls -la tests
   - pytest --doctest-modules
+notifications:
+  email: false

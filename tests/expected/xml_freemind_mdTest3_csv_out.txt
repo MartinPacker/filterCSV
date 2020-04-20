@@ -1,0 +1,34 @@
+<map>
+  <node TEXT='A'>
+    <node TEXT='A1'>
+    </node>
+    <node TEXT='A2'>
+      <node TEXT='A2A'>
+        <node TEXT='A2A1'>
+          <richcontent TYPE='NOTE'><html>
+            <head></head>
+            <body>
+              <p>
+                This is a test note - to see how it gets rendered.
+              </p>
+            </body>
+          </richcontent>
+        </node>
+        <node TEXT='A2A2'>
+          <node TEXT='A2A21'>
+          </node>
+        </node>
+      </node>
+    </node>
+  </node>
+  <node TEXT='X'>
+    <richcontent TYPE='NOTE'><html>
+      <head></head>
+      <body>
+        <p>
+          This is another test note with a second line
+        </p>
+      </body>
+    </richcontent>
+  </node>
+</map>

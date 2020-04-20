@@ -133,23 +133,21 @@ testdata = {
 def test_file_processing(args, stdin_file):
     args = args.split()
     dirname, basename = os.path.split(stdin_file)
-    file_base = "_".join(args + [basename]).replace("|", "").replace(".", "_")
-    expected_err = os.path.join(dirname, "expected", file_base) + "_err.txt"
-    expected_out = os.path.join(dirname, "expected", file_base) + "_out.txt"
-    assert False, expected_err
-    """
-    ="tests/test1.csv",
-                         args=["./filterCSV", "^A1$", "3 note"],
-                         expected_err=expected_err,
-                        expected_out=expected_out):
-    err_path = f"{stdin_path}
-    with open(stdin_path) as in_file:
-        # stdin = in_file.read()
-        # stdout = None
+    file_base = "_".join(args + [basename.replace(".", "_")])
+    file_base = file_base.replace("^", "").replace("$", "").replace("|", "")
+    file_base = os.path.join(dirname, "expected", file_base)
+    # tests/expected/check_repairsubtree_badLevels_csv
+    # tests/expected/A2AX_keep_test1_csv
+
+    args = [arg.replace("_", " ") for arg in ["./filterCSV"] + args]
+    with open(stdin_file) as in_file:
         cp = subprocess.run(args, capture_output=True, text=True, stdin=in_file)
     assert cp.returncode == 0, cp
-    assert cp.stderr, cp.stderr
-    assert cp.stdout, cp.stdout
-    assert expected_out in cp.stdout, f"{expected_out}\nis not in\n{cp.stdout}"
-    """
-    
+
+    with open(f"{file_base}_err.txt") as in_file:
+        expected_err = in_file.read().strip()
+    assert expected_err in cp.stderr, f"{expected_err}\n***is not in***\n{cp.stderr}"
+
+    with open(f"{file_base}_out.txt") as in_file:
+        expected_out = in_file.read().strip()
+    assert expected_out in cp.stdout, f"{expected_out}\n***is not in***\n{cp.stdout}"
