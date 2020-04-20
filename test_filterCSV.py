@@ -115,10 +115,32 @@ expected_out = """
 """.strip()
 
 
-def test_file_processing(stdin_path="tests/test1.csv",
+# cat tests/badLevels.csv | ./filterCSV check repairsubtree
+# cat tests/test1.csv     | ./filterCSV '^A1$' '3 note'
+testdata = {
+    "check repairsubtree": "tests/badLevels.csv",
+    "^A1$ 3_note": "tests/test1.csv",
+    "": "tests/test2.md",
+    "markdown 2_3": "tests/mdTest3.csv",
+    "xml freemind": "tests/mdTest3.csv",
+    "A2A|X keep": "tests/test1.csv",
+    "promote 2": "tests/promotion.csv",
+}
+
+
+@pytest.mark.parametrize("args,stdin_file", testdata.items())
+def test_file_processing(args, stdin_file):
+    dirname, basename = os.path.split(stdin_file)
+    file_base = "_".join(args + [basename]).replace("|", "").replace(".", "_")
+    expected_err = os.path.join(dirname, "expected", file_base) + "_err.txt"
+    expected_out = os.path.join(dirname, "expected", file_base) + "_out.txt"
+    assert False, expected_err
+    """
+    ="tests/test1.csv",
                          args=["./filterCSV", "^A1$", "3 note"],
                          expected_err=expected_err,
                         expected_out=expected_out):
+    err_path = f"{stdin_path}
     with open(stdin_path) as in_file:
         # stdin = in_file.read()
         # stdout = None
@@ -127,4 +149,5 @@ def test_file_processing(stdin_path="tests/test1.csv",
     assert cp.stderr, cp.stderr
     assert cp.stdout, cp.stdout
     assert expected_out in cp.stdout, f"{expected_out}\nis not in\n{cp.stdout}"
+    """
     
