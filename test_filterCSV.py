@@ -131,6 +131,7 @@ testdata = {
 
 @pytest.mark.parametrize("args,stdin_file", testdata.items())
 def test_file_processing(args, stdin_file):
+    args = args.split()
     dirname, basename = os.path.split(stdin_file)
     file_base = "_".join(args + [basename]).replace("|", "").replace(".", "_")
     expected_err = os.path.join(dirname, "expected", file_base) + "_err.txt"
