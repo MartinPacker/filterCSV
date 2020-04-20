@@ -1,6 +1,7 @@
 os: linux
 dist: bionic
 language: python
+python: 3.8
 install: pip install flake8
 jobs:
   include:
@@ -17,3 +18,5 @@ before_script:
   - # ln -s filterCSV filterCSV.py
   - ls -la ; ls -la tests
   - pytest --doctest-modules
+notifications:
+  email: false

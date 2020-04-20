@@ -3,7 +3,9 @@
 # To make it easy to import ../filterCSV even though it has no .py extension, we did:
 # ln -s ../filterCSV filterCSV.py  # make a symlink from ../filterCSV to ./filterCSV.py
 
+import os
 import string
+import subprocess
 
 import pytest
 
@@ -92,3 +94,40 @@ def test_no_spaces(whitespace=string.ascii_letters+string.digits+string.punctuat
     # "a" is in both <space> and <tab>
     assert "c" not in s
     assert "e" not in s
+
+
+# cat tests/badLevels.csv | ./filterCSV check repairsubtree
+# cat tests/test1.csv     | ./filterCSV '^A1$' '3 note'
+testdata = {
+    "check repairsubtree": "tests/badLevels.csv",
+    "^A1$ 3_note": "tests/test1.csv",
+    "": "tests/test2.md",
+    "markdown 2_3": "tests/mdTest3.csv",
+    "xml freemind": "tests/mdTest3.csv",
+    "A2A|X keep": "tests/test1.csv",
+    "promote 2": "tests/promotion.csv",
+}
+
+
+@pytest.mark.parametrize("args,stdin_file", testdata.items())
+def test_file_processing(args, stdin_file):
+    args = args.split()
+    dirname, basename = os.path.split(stdin_file)
+    file_base = "_".join(args + [basename.replace(".", "_")])
+    file_base = file_base.replace("^", "").replace("$", "").replace("|", "")
+    file_base = os.path.join(dirname, "expected", file_base)
+    # tests/expected/check_repairsubtree_badLevels_csv
+    # tests/expected/A2AX_keep_test1_csv
+
+    args = [arg.replace("_", " ") for arg in ["./filterCSV"] + args]
+    with open(stdin_file) as in_file:
+        cp = subprocess.run(args, capture_output=True, text=True, stdin=in_file)
+    assert cp.returncode == 0, cp
+
+    with open(f"{file_base}_err.txt") as in_file:
+        expected_err = in_file.read().strip()
+    assert expected_err in cp.stderr, f"{expected_err}\n***is not in***\n{cp.stderr}"
+
+    with open(f"{file_base}_out.txt") as in_file:
+        expected_out = in_file.read().strip()
+    assert expected_out in cp.stdout, f"{expected_out}\n***is not in***\n{cp.stdout}"

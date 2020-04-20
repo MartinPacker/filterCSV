@@ -1,0 +1,6 @@
+Criterion                                Actions
+---------                                -------
+xml                                      freemind
+
+
+Exported XML will have more than 1 root node. Some programs will get confused by this. Continuing.

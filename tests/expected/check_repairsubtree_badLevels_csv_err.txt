@@ -1,0 +1,14 @@
+Criterion                                Actions
+---------                                -------
+check                                    repairsubtree
+
+
+Beginning Level Check
+---------------------
+A                                        Error: Expected level 0. Found level 1. Repaired this node (setting its level to 0) and all its child nodes.
+A1                                       OK:    Found level 1.
+A2                                       OK:    Found level 1.
+A2A                                      OK:    Found level 2.
+X                                        OK:    Found level 0.
+---------------------
+Completed Level Check
