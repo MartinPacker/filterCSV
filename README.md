@@ -241,4 +241,4 @@ filterCSV can output to OPML XML format, but support for notes and colours by ot
 
 ## Test Files
 
-[tests/READMEmd](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
+[tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
