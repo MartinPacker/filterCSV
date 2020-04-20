@@ -7,4 +7,4 @@ This directory contains test files that you can test against and study to become
 * **mdtest3.csv** is a file with 5 levels of nodes, designed to test Markdown export.
 * **badlevels.csv** contains a level error - for use with `check`.
 
-There is also an **expected** that is used by pytest to ensure that our file tests generate the correct output to stdout and stderr.
+There is also an **expected** directory that is used by pytest to verify that our file tests are sending the expected output to stdout and stderr.
