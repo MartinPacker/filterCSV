@@ -791,55 +791,58 @@ class CSVTree:
     def writeStatistics(self, actionslist):
         # Write statistics in one of a number of formats
         
+        # Prime array of output lines
+        output = []
+        
         # Get the statistics array
         statistics = self.getStatistics()
         
         # Output the statistics in the right format
         firstAction = actionslist[0]
         if firstAction == "csv":
-            print("'Level','Nodes','Distinct Nodes'")
+            output.append("'Level','Nodes','Distinct Nodes'")
         
             for level in range(0,21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print(str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes))
+                output.append(str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes))
         elif firstAction == "html":
-            print("<table>")
-            print("<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>")
+            output.append("<table>")
+            output.append("<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>")
             for level in range(0,21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print("<tr>")
-                print("<td>" + str(level) + "</td>")
-                print("<td>" + str(levelNodes) + "</td>")
-                print("<td>" + str(distinctLevelNodes) + "</td>")
-                print("</tr>")
-            print("</table>")
+                output.append("<tr>")
+                output.append("<td>" + str(level) + "</td>")
+                output.append("<td>" + str(levelNodes) + "</td>")
+                output.append("<td>" + str(distinctLevelNodes) + "</td>")
+                output.append("</tr>")
+            output.append("</table>")
         elif firstAction == "markdown":
-            print("|Level|Nodes|Distinct Nodes|")
-            print("|-:|-:|-:|")
+            output.append("|Level|Nodes|Distinct Nodes|")
+            output.append("|-:|-:|-:|")
             for level in range(0,21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print("|" + str(level) + "|" + str(levelNodes) + "|" + str(distinctLevelNodes)+"|")
+                output.append("|" + str(level) + "|" + str(levelNodes) + "|" + str(distinctLevelNodes)+"|")
         elif firstAction == "text":
-            print("Level Nodes Distinct Nodes")
+            output.append("Level Nodes Distinct Nodes")
             for level in range(0,21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
                 distinctLevelNodes=statistics[1][level]
-                print(str(level).rjust(5, " ") + " " + str(levelNodes).rjust(5, " ") + " " + str(distinctLevelNodes).rjust(14," "))
+                output.append(str(level).rjust(5, " ") + " " + str(levelNodes).rjust(5, " ") + " " + str(distinctLevelNodes).rjust(14," "))
         else:
             sys.stderr.write("Invalid format for 'stats': " + firstAction+"\n")
                 
-        
+        return output
 
 
     def getStatistics(self):
@@ -1239,7 +1242,7 @@ if __name__ == "__main__":
         elif matchCriterion.pattern.lower() == "promote":
             csvTree.promoteLevel(actionsList)
         elif matchCriterion.pattern.lower() == "stats":
-            csvTree.writeStatistics(actionsList)
+            writeOutput(csvTree.writeStatistics(actionsList))
             sys.exit()
         else:
             csvTree.applyFilter(matchCriterion, actionsList)
