@@ -282,12 +282,8 @@ class CSVTree:
         # Compose this node's line - if not root node
         level = int(self.data["level"])
         if level > -1:
-            line = []
-            line.append(self.data["colour"])
-            line.append(self.data["note"])
-            line.append(self.data["position"])
-            line.append(self.data["shape"])
-            line.append(self.data["level"])
+            line = [self.data[key] for key
+                    in "colour note position shape level".split()
             for l in range(int(self.data["level"])):
                 line.append("")
             line.append(self.data["cell"])
