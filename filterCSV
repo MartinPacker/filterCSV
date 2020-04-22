@@ -406,16 +406,13 @@ class CSVTree:
         for childNode in self.childNodes:
             childNode._exportToMarkdown(maxHeadingLevel, startingLevel)
 
-    def calculateMaximumLevel(self):
-        return self._calculateMaximumLevel(0)
-
-    def _calculateMaximumLevel(self, maximumLevel):
+    def calculateMaximumLevel(self, maximumLevel=0):
         level = int(self.data["level"])
         maximumLevel = max(level, maximumLevel)
 
         for childNode in self.childNodes:
             maximumLevel = max(
-                maximumLevel, childNode._calculateMaximumLevel(maximumLevel)
+                maximumLevel, childNode.calculateMaximumLevel(maximumLevel)
             )
 
         return maximumLevel
