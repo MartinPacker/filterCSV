@@ -423,7 +423,9 @@ class CSVTree:
     def exportToHTML(self, actionsList):
         action = actionsList[0]
 
-        output=[]
+        # Prime array of output lines
+        output = []
+
         if action == "table":
             # Work out how many levels are needed
             maximumLevel = self.calculateMaximumLevel()
@@ -451,6 +453,7 @@ class CSVTree:
         return output
 
     def _exportToHTMLTable(self, maximumLevel, action):
+        # Prime array of output lines
         output = []
     
         level = int(self.data["level"])
@@ -492,6 +495,9 @@ class CSVTree:
         return output
 
     def _exportToHTMLList(self, action):
+        # Prime array of output lines
+        output = []
+
         level = int(self.data["level"])
 
         # Determine the cell background colour
@@ -527,7 +533,7 @@ class CSVTree:
         for childNode in self.childNodes:
             returnedLevel, freshOutput = childNode._exportToHTMLList(action)
             
-        output += freshOutput
+            output += freshOutput
 
         if level > -1:
             if needListElements is True:
