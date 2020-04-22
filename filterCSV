@@ -283,7 +283,7 @@ class CSVTree:
         level = int(self.data["level"])
         if level > -1:
             line = [self.data[key] for key
-                    in "colour note position shape level".split()
+                    in "colour note position shape level".split()]
             for l in range(int(self.data["level"])):
                 line.append("")
             line.append(self.data["cell"])
