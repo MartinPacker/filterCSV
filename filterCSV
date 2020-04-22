@@ -34,6 +34,7 @@ from collections import Counter
 filterCSV_level = "1.1"
 filterCSV_date = "22 April, 2020"
 
+
 class iThoughtsColours:
     light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
                       B2FFFF B2D8FF B2B2FF D8B2FF FFB2FF FFB2D8""".split()
@@ -50,7 +51,7 @@ class iThoughtsColours:
                    eee8d5 fdf6e3 b58900 cb4b16 dc322f d33682
                    6c71c4 268bd2 2aa198 859900""".split()
     colours = light_pastel + dark_pastel + saturated + grayscale + solarized
-    
+
     colourNumber = 0
 
     def __getitem__(self, key):
@@ -72,7 +73,7 @@ class iThoughtsColours:
         '859900'
         """
         return self[colourNumber - 1]
-    
+
     def __len__(self):
         """
         >>> len(iThoughtsColours())
@@ -97,6 +98,7 @@ class iThoughtsColours:
         """
         return self.colourNumber
 
+
 class iThoughtsShapes:
     # Shapes as understood by iThoughts
     shapes = (
@@ -115,7 +117,7 @@ class iThoughtsShapes:
         "square bracket",
         "curved bracket",
     )
-    
+
     shapeNumber = 0
 
     def __contains__(self, item):
@@ -143,7 +145,7 @@ class iThoughtsShapes:
         14
         """
         return len(self.shapes)
-        
+
     def getNextShapeNumber(self):
         """Get the next shape number from the iThoughts list
         >>> ithoughts_shapes = iThoughtsShapes()
@@ -160,6 +162,7 @@ class iThoughtsShapes:
         0
         """
         return self.shapeNumber
+
 
 class CSVTree:
     def __init__(self, shape, colour, note, level, position, cell):
@@ -195,10 +198,12 @@ class CSVTree:
         """
         Common method for establishing if a node matches some criterion, usually a regex
         """
-        return (re.search(criterion, self.data["shape"])
-                or re.search(criterion, self.data["colour"])
-                or re.search(criterion, self.data["note"])
-                or re.search(criterion, self.data["cell"]))
+        return (
+            re.search(criterion, self.data["shape"])
+            or re.search(criterion, self.data["colour"])
+            or re.search(criterion, self.data["note"])
+            or re.search(criterion, self.data["cell"])
+        )
 
     def applyFilter(self, criterion, actionsList):
         """
@@ -241,7 +246,9 @@ class CSVTree:
                     elif action == "nocolour":
                         # Remove any colour specification from the matched node
                         self.data["colour"] = ""
-                    elif (len(action) == 6) & set(action).issubset(set(string.hexdigits)):
+                    elif (len(action) == 6) & set(action).issubset(
+                        set(string.hexdigits)
+                    ):
                         # 6-digit hexadecimal so is colour RGB value
                         self.data["colour"] = action
                     elif action in iThoughtsShapes:
@@ -262,8 +269,15 @@ class CSVTree:
                                 + "').\n"
                             )
                         else:
-                            self.data["colour"] = iThoughtsColours.getColour(colourNumber)
-                            sys.stderr.write(str(colourNumber)+" "+iThoughtsColours.getColour(colourNumber)+"\n")
+                            self.data["colour"] = iThoughtsColours.getColour(
+                                colourNumber
+                            )
+                            sys.stderr.write(
+                                str(colourNumber)
+                                + " "
+                                + iThoughtsColours.getColour(colourNumber)
+                                + "\n"
+                            )
                     else:
                         sys.stderr.write(
                             "Erroneous action value "
@@ -298,8 +312,8 @@ class CSVTree:
             child.writeCSVTree(outputArray)
 
         return outputArray
-    
-    def getCounter(self, counter = None):
+
+    def getCounter(self, counter=None):
         """
         >>> csv_tree = CSVTree("shape", "colour", "note", 1, 1, "cell")
         >>> csv_tree.getCounter()
@@ -411,7 +425,7 @@ class CSVTree:
 
         for childNode in self.childNodes:
             output += childNode._exportToMarkdown(maxHeadingLevel, startingLevel)
-        
+
         return output
 
     def calculateMaximumLevel(self):
@@ -437,7 +451,7 @@ class CSVTree:
         if action == "table":
             # Work out how many levels are needed
             maximumLevel = self.calculateMaximumLevel()
-            
+
             # Write table start
             output.append("<table>")
 
@@ -452,7 +466,7 @@ class CSVTree:
 
             # Write nested list
             level, freshOutput = self._exportToHTMLList(action)
-            
+
             output += freshOutput
 
             # Write top-level list stop
@@ -463,7 +477,7 @@ class CSVTree:
     def _exportToHTMLTable(self, maximumLevel, action):
         # Prime array of output lines
         output = []
-    
+
         level = int(self.data["level"])
         # Determine the cell background colour
         colour = self.data["colour"] or "FFFFFF"
@@ -499,7 +513,7 @@ class CSVTree:
 
         for childNode in self.childNodes:
             output += childNode._exportToHTMLTable(maximumLevel, action)
-        
+
         return output
 
     def _exportToHTMLList(self, action):
@@ -540,7 +554,7 @@ class CSVTree:
         returnedLevel = -2
         for childNode in self.childNodes:
             returnedLevel, freshOutput = childNode._exportToHTMLList(action)
-            
+
             output += freshOutput
 
         if level > -1:
@@ -565,7 +579,6 @@ class CSVTree:
 
         # Prime array of output lines
         output = []
-    
 
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
@@ -582,13 +595,13 @@ class CSVTree:
 
         # Finish the map
         output.append("</map>")
-        
+
         return output
 
     def _exportToFreemindXML(self, actionslist):
         # Prime array of output lines
         output = []
-    
+
         level = int(self.data["level"])
 
         if level > -1:
@@ -636,7 +649,6 @@ class CSVTree:
 
         # Prime array of output lines
         output = []
-    
 
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
@@ -657,13 +669,13 @@ class CSVTree:
         # Finish the map
         output.append("  </body>")
         output.append("</opml>")
-        
+
         return output
 
     def _exportToOPMLXML(self, actionslist):
         # Prime array of output lines
         output = []
-    
+
         level = int(self.data["level"])
 
         if level > -1:
@@ -697,7 +709,7 @@ class CSVTree:
 
         if level > -1:
             output.append(indent + "</outline>")
-        
+
         return output
 
     def processKeep(self, matchCriterion):
@@ -787,35 +799,39 @@ class CSVTree:
                 nodes = childNode._findNodesAtLevel(level, nodes)
 
         return nodes
-    
+
     def writeStatistics(self, actionslist):
         # Write statistics in one of a number of formats
-        
+
         # Prime array of output lines
         output = []
-        
+
         # Get the statistics array
         statistics = self.getStatistics()
-        
+
         # Output the statistics in the right format
         firstAction = actionslist[0]
         if firstAction == "csv":
             output.append("'Level','Nodes','Distinct Nodes'")
-        
-            for level in range(0,21):
+
+            for level in range(0, 21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
-                distinctLevelNodes=statistics[1][level]
-                output.append(str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes))
+                distinctLevelNodes = statistics[1][level]
+                output.append(
+                    str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes)
+                )
         elif firstAction == "html":
             output.append("<table>")
-            output.append("<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>")
-            for level in range(0,21):
+            output.append(
+                "<tr>\n<th>Level</th>\n<th>Nodes</th>\n<th>Distinct Nodes</th>\n</tr>"
+            )
+            for level in range(0, 21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
-                distinctLevelNodes=statistics[1][level]
+                distinctLevelNodes = statistics[1][level]
                 output.append("<tr>")
                 output.append("<td>" + str(level) + "</td>")
                 output.append("<td>" + str(levelNodes) + "</td>")
@@ -825,61 +841,78 @@ class CSVTree:
         elif firstAction == "markdown":
             output.append("|Level|Nodes|Distinct Nodes|")
             output.append("|-:|-:|-:|")
-            for level in range(0,21):
+            for level in range(0, 21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
-                distinctLevelNodes=statistics[1][level]
-                output.append("|" + str(level) + "|" + str(levelNodes) + "|" + str(distinctLevelNodes)+"|")
+                distinctLevelNodes = statistics[1][level]
+                output.append(
+                    "|"
+                    + str(level)
+                    + "|"
+                    + str(levelNodes)
+                    + "|"
+                    + str(distinctLevelNodes)
+                    + "|"
+                )
         elif firstAction == "text":
             output.append("Level Nodes Distinct Nodes")
-            for level in range(0,21):
+            for level in range(0, 21):
                 levelNodes = statistics[0][level]
                 if levelNodes == 0:
                     break
-                distinctLevelNodes=statistics[1][level]
-                output.append(str(level).rjust(5, " ") + " " + str(levelNodes).rjust(5, " ") + " " + str(distinctLevelNodes).rjust(14," "))
+                distinctLevelNodes = statistics[1][level]
+                output.append(
+                    str(level).rjust(5, " ")
+                    + " "
+                    + str(levelNodes).rjust(5, " ")
+                    + " "
+                    + str(distinctLevelNodes).rjust(14, " ")
+                )
         else:
-            sys.stderr.write("Invalid format for 'stats': " + firstAction+"\n")
-                
-        return output
+            sys.stderr.write("Invalid format for 'stats': " + firstAction + "\n")
 
+        return output
 
     def getStatistics(self):
         # Prime statistics arrays
         nodesAtLevel = []
         distinctNodeValuesAtLevel = []
-        for level in range(0,21):
+        for level in range(0, 21):
             nodesAtLevel.append(0)
             distinctNodeValuesAtLevel.append([])
-        
+
         # Walk the tree, updating statistics
-        [nodesAtLevel, distinctNodeValuesAtLevel] = self._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
-        
+        [nodesAtLevel, distinctNodeValuesAtLevel] = self._getStatistics(
+            nodesAtLevel, distinctNodeValuesAtLevel
+        )
+
         # Coalesce the sets of node values into counts
         distinctNodesAtLevel = []
-        for level in range(0,21):
+        for level in range(0, 21):
             distinctNodesAtLevel.append(len(distinctNodeValuesAtLevel[level]))
-        
+
         # Return the statistics:
         #    Count of nodes at each level
         #    Count of unique node values at each level
-        return [nodesAtLevel,distinctNodesAtLevel]
-        
+        return [nodesAtLevel, distinctNodesAtLevel]
+
     def _getStatistics(self, nodesAtLevel, distinctNodeValuesAtLevel):
         level = int(self.data["level"])
         if level > -1:
             # Increment count of nodes at this level
             nodesAtLevel[level] += 1
-            
+
             # Add cell value to the list for this level - if it's not already in it
-            cellValue = self.data['cell']
+            cellValue = self.data["cell"]
             if cellValue not in distinctNodeValuesAtLevel[level]:
                 distinctNodeValuesAtLevel[level].append(cellValue)
-               
+
         for childNode in self.childNodes:
-            [nodesAtLevel, distinctNodeValuesAtLevel] = childNode._getStatistics(nodesAtLevel, distinctNodeValuesAtLevel)
-                   
+            [nodesAtLevel, distinctNodeValuesAtLevel] = childNode._getStatistics(
+                nodesAtLevel, distinctNodeValuesAtLevel
+            )
+
         return [nodesAtLevel, distinctNodeValuesAtLevel]
 
 
@@ -896,9 +929,11 @@ def formatWhitespaceCharacters(whitespace):
             formattedIndentCharacters += "<tab>"
     return formattedIndentCharacters
 
+
 def writeOutput(printLines):
     for line in printLines:
         print(line)
+
 
 matchCriteria = []
 actionsLists = []
@@ -938,9 +973,13 @@ if __name__ == "__main__":
             elif action in ("samecolour", "samecolor", "sc"):
                 actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
             elif action in ("nextshape", "ns"):
-                actionList[actionNumber] = iThoughtsShapes[iThoughtsShapes.getNextShapeNumber()]
+                actionList[actionNumber] = iThoughtsShapes[
+                    iThoughtsShapes.getNextShapeNumber()
+                ]
             elif action in ("sameshape", "ss"):
-                actionList[actionNumber] = iThoughtsShapes[iThoughtsShapes.getSameShapeNumber()]
+                actionList[actionNumber] = iThoughtsShapes[
+                    iThoughtsShapes.getSameShapeNumber()
+                ]
 
         # Add actions list to list of actions lists
         actionsLists.append(actionList)
