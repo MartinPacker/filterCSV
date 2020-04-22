@@ -368,6 +368,9 @@ class CSVTree:
             childNode.repairSubtreeLevels(parentLevel + 1)
 
     def exportToMarkdown(self, actionsList):
+        # Prime array of output lines
+        output = []
+
         # Get the number of heading levels to allow before going to nested bulleted lists
         headingLevels = int(actionsList[0])
 
@@ -378,22 +381,25 @@ class CSVTree:
             # Default to starting at heading level 1
             startingLevel = 1
 
-        self._exportToMarkdown(headingLevels - 1, startingLevel)
+        return self._exportToMarkdown(headingLevels - 1, startingLevel)
 
     def _exportToMarkdown(self, maxHeadingLevel, startingLevel):
+        # Prime array of output lines
+        output = []
+
         level = int(self.data["level"])
         if level > -1:
             note = self.data["note"]
             if level > maxHeadingLevel:
-                print(
+                output.append(
                     "  " * (level - maxHeadingLevel - startingLevel + 2)
                     + "* "
                     + self.data["cell"]
                 )
                 if note:
-                    print("<br/><br/>" + note + "\n")
+                    output.append("<br/><br/>" + note + "\n")
             else:
-                print(
+                output.append(
                     "\n"
                     + "#" * (level + startingLevel)
                     + " "
@@ -401,10 +407,12 @@ class CSVTree:
                     + "\n"
                 )
                 if note:
-                    print(note + "\n")
+                    output.append(note + "\n")
 
         for childNode in self.childNodes:
-            childNode._exportToMarkdown(maxHeadingLevel, startingLevel)
+            output += childNode._exportToMarkdown(maxHeadingLevel, startingLevel)
+        
+        return output
 
     def calculateMaximumLevel(self):
         return self._calculateMaximumLevel(0)
@@ -1220,7 +1228,7 @@ if __name__ == "__main__":
         elif matchCriterion.pattern.lower() == "check":
             csvTree.checkHierarchy(actionsList)
         elif matchCriterion.pattern.lower() == "markdown":
-            csvTree.exportToMarkdown(actionsList)
+            writeOutput(csvTree.exportToMarkdown(actionsList))
             sys.exit()
         elif matchCriterion.pattern.lower() == "html":
             writeOutput(csvTree.exportToHTML(actionsList))
