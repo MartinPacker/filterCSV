@@ -195,8 +195,10 @@ class CSVTree:
         """
         Common method for establishing if a node matches some criterion, usually a regex
         """
-        return any(re.search(criterion, self.data[key]) for key
-                   in ("shape", "colour", "note", "cell"))
+        return (re.search(criterion, self.data["shape"])
+                or re.search(criterion, self.data["colour"])
+                or re.search(criterion, self.data["note"])
+                or re.search(criterion, self.data["cell"]))
 
     def applyFilter(self, criterion, actionsList):
         """
