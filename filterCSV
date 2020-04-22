@@ -31,8 +31,8 @@ from collections import Counter
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.0"
-filterCSV_date = "19 April, 2020"
+filterCSV_level = "1.1"
+filterCSV_date = "22 April, 2020"
 
 class iThoughtsColours:
     light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
@@ -423,44 +423,50 @@ class CSVTree:
     def exportToHTML(self, actionsList):
         action = actionsList[0]
 
+        output=[]
         if action == "table":
             # Work out how many levels are needed
             maximumLevel = self.calculateMaximumLevel()
-
+            
             # Write table start
-            print("<table>")
+            output.append("<table>")
 
             # Write table rows
-            self._exportToHTMLTable(maximumLevel, action)
+            output += self._exportToHTMLTable(maximumLevel, action)
 
             # Write table end
-            print("</table>")
-
+            output.append("</table>")
         else:
             # Write top-level list start
-            print("<ul style='list-style-type: none;'>")
+            output.append("<ul style='list-style-type: none;'>")
 
             # Write nested list
-            self._exportToHTMLList(action)
+            level, freshOutput = self._exportToHTMLList(action)
+            
+            output += freshOutput
 
             # Write top-level list stop
-            print("</ul>")
+            output.append("</ul>")
+
+        return output
 
     def _exportToHTMLTable(self, maximumLevel, action):
+        output = []
+    
         level = int(self.data["level"])
         # Determine the cell background colour
         colour = self.data["colour"] or "FFFFFF"
         # HTML table
         if level > -1:
             # Print table row start
-            print("<tr>")
+            output.append("<tr>")
 
             # Print padding empty columns after the cell's column
             if level > 0:
-                print("<td></td>" * level)
+                output.append("<td></td>" * level)
 
             # Print the cell itself, including styling
-            print(
+            output.append(
                 "<td style='border: 1px solid black;border-radius: 5px;background-color: #"
                 + colour
                 + ";'>"
@@ -470,18 +476,20 @@ class CSVTree:
 
             # Print padding empty columns after the cell's column
             if level < maximumLevel:
-                print("<td></td>" * (maximumLevel - level))
+                output.append("<td></td>" * (maximumLevel - level))
 
             # Print any note as a final column
             note = self.data["note"]
             if note:
-                print("<td>" + note + "</td>")
+                output.append("<td>" + note + "</td>")
 
             # Print table row end
-            print("</tr>")
+            output.append("</tr>")
 
         for childNode in self.childNodes:
-            childNode._exportToHTMLTable(maximumLevel, action)
+            output += childNode._exportToHTMLTable(maximumLevel, action)
+        
+        return output
 
     def _exportToHTMLList(self, action):
         level = int(self.data["level"])
@@ -498,7 +506,7 @@ class CSVTree:
         if level > -1:
             indent = "  " * (level + 1)
             # print list item
-            print(
+            output.append(
                 indent
                 + "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
                 + colour
@@ -509,23 +517,25 @@ class CSVTree:
 
             # Print any note
             if note:
-                print(indent + "  <br/><br/>" + note)
+                output.append(indent + "  <br/><br/>" + note)
 
             needListElements = len(self.childNodes) > 0
             if needListElements is True:
-                print(indent + "<ul style='list-style-type: none;'>")
+                output.append(indent + "<ul style='list-style-type: none;'>")
 
         returnedLevel = -2
         for childNode in self.childNodes:
-            returnedLevel = childNode._exportToHTMLList(action)
+            returnedLevel, freshOutput = childNode._exportToHTMLList(action)
+            
+        output += freshOutput
 
         if level > -1:
             if needListElements is True:
-                print(indent + "</ul>")
+                output.append(indent + "</ul>")
 
-            print(indent + "</li>")
+            output.append(indent + "</li>")
 
-        return level
+        return [level, output]
 
     def exportToXML(self, actionsList):
         action = actionsList[0]
@@ -846,6 +856,9 @@ def formatWhitespaceCharacters(whitespace):
             formattedIndentCharacters += "<tab>"
     return formattedIndentCharacters
 
+def writeOutput(printLines):
+    for line in printLines:
+        print(line)
 
 matchCriteria = []
 actionsLists = []
@@ -1181,7 +1194,7 @@ if __name__ == "__main__":
             csvTree.exportToMarkdown(actionsList)
             sys.exit()
         elif matchCriterion.pattern.lower() == "html":
-            csvTree.exportToHTML(actionsList)
+            writeOutput(csvTree.exportToHTML(actionsList))
             sys.exit()
         elif matchCriterion.pattern.lower() == "xml":
             csvTree.exportToXML(actionsList)
