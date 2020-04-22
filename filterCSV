@@ -548,12 +548,16 @@ class CSVTree:
 
         if action == "freemind":
             # Freemind XML export
-            self.exportToFreemindXML(actionsList)
+            return self.exportToFreemindXML(actionsList)
         elif action == "opml":
-            self.exportToOPMLXML(actionList)
+            return self.exportToOPMLXML(actionList)
 
     def exportToFreemindXML(self, actionsList):
         # Export to XML in the format Freemind, MindNode and iThoughts accept
+
+        # Prime array of output lines
+        output = []
+    
 
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
@@ -562,15 +566,21 @@ class CSVTree:
             )
 
         # Start the map
-        print("<map>")
+        output.append("<?xml version='1.0'?>")
+        output.append("<map>")
 
         # Recursively print the nodes
-        self._exportToFreemindXML(actionsList)
+        output += self._exportToFreemindXML(actionsList)
 
         # Finish the map
-        print("</map>")
+        output.append("</map>")
+        
+        return output
 
     def _exportToFreemindXML(self, actionslist):
+        # Prime array of output lines
+        output = []
+    
         level = int(self.data["level"])
 
         if level > -1:
@@ -583,9 +593,9 @@ class CSVTree:
 
             indent = "  " * (level + 1)
             if colour == "":
-                print(indent + "<node TEXT='" + cell + "'>")
+                output.append(indent + "<node TEXT='" + cell + "'>")
             else:
-                print(
+                output.append(
                     indent
                     + "<node BACKGROUND_COLOR='#"
                     + colour
@@ -595,24 +605,30 @@ class CSVTree:
                 )
 
             if note:
-                print(indent + "  <richcontent TYPE='NOTE'><html>")
-                print(indent + "    <head></head>")
-                print(indent + "    <body>")
-                print(indent + "      <p>")
-                print(indent + "        " + note)
-                print(indent + "      </p>")
-                print(indent + "    </body>")
+                output.append(indent + "  <richcontent TYPE='NOTE'><html>")
+                output.append(indent + "    <head></head>")
+                output.append(indent + "    <body>")
+                output.append(indent + "      <p>")
+                output.append(indent + "        " + note)
+                output.append(indent + "      </p>")
+                output.append(indent + "    </body>")
 
-                print(indent + "  </richcontent>")
+                output.append(indent + "  </richcontent>")
 
         for childNode in self.childNodes:
-            childNode._exportToFreemindXML(actionList)
+            output += childNode._exportToFreemindXML(actionList)
 
         if level > -1:
-            print(indent + "</node>")
+            output.append(indent + "</node>")
+
+        return output
 
     def exportToOPMLXML(self, actionsList):
         # Export to OPML XML
+
+        # Prime array of output lines
+        output = []
+    
 
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
@@ -621,20 +637,25 @@ class CSVTree:
             )
 
         # Start the map
-        print("<?xml version='1.0'?>")
-        print("<opml version='2.0'>")
-        print("  <head>")
-        print("  </head>")
-        print("  <body>")
+        output.append("<?xml version='1.0'?>")
+        output.append("<opml version='2.0'>")
+        output.append("  <head>")
+        output.append("  </head>")
+        output.append("  <body>")
 
-        # Recursively print the nodes
-        self._exportToOPMLXML(actionsList)
+        # Recursively output.append the nodes
+        output += self._exportToOPMLXML(actionsList)
 
         # Finish the map
-        print("  </body>")
-        print("</opml>")
+        output.append("  </body>")
+        output.append("</opml>")
+        
+        return output
 
     def _exportToOPMLXML(self, actionslist):
+        # Prime array of output lines
+        output = []
+    
         level = int(self.data["level"])
 
         if level > -1:
@@ -661,13 +682,15 @@ class CSVTree:
             if note:
                 printLine = printLine + " Note='" + note + "'"
 
-            print(printLine + ">")
+            output.append(printLine + ">")
 
         for childNode in self.childNodes:
-            childNode._exportToOPMLXML(actionList)
+            output += childNode._exportToOPMLXML(actionList)
 
         if level > -1:
-            print(indent + "</outline>")
+            output.append(indent + "</outline>")
+        
+        return output
 
     def processKeep(self, matchCriterion):
         # Reset all nodes' matched flags
@@ -1203,7 +1226,7 @@ if __name__ == "__main__":
             writeOutput(csvTree.exportToHTML(actionsList))
             sys.exit()
         elif matchCriterion.pattern.lower() == "xml":
-            csvTree.exportToXML(actionsList)
+            writeOutput(csvTree.exportToXML(actionsList))
             sys.exit()
         elif matchCriterion.pattern.lower() == "promote":
             csvTree.promoteLevel(actionsList)
