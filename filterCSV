@@ -429,6 +429,9 @@ class CSVTree:
         return output
 
     def calculateMaximumLevel(self):
+        """
+        maximum level is the max of this level and the levels of all childNodes.
+        """
         return max(int(level) for level in [self.data["level"]]
                    + [node.data["level"] for node in self.childNodes])
 
