@@ -188,6 +188,23 @@ As an example, you might code
 
     filterCSV check repair < input.csv > output.csv
 
+#### Spreading Out Level 0 (Root) Nodes
+
+If you import a CSV file without specifying positions in the file iThoughts will place all the Level 0 (root) nodes on top of each other. \
+This is probably not what you want. \
+filterCSV can spread out the Level 0 nodes - either horizontally or vertically.
+
+For example, if you specify `vspread 500` filterCSV will set the positions of the Level 0 nodes 500 units apart - one above the other.
+
+For example, if you specify  `hspread 1000` filterCSV will set the positions of the Level 0 nodes 500 units apart - spaced out horizontally.
+
+In both cases the children will be arranged as normal, relative to the root nodes.
+
+vspread and hspread set the values for these nodes in the "position" column in the CSV file.\
+Their format is of the form "{1000,0}". \
+(In this example "1000" is the horizontal offset and "0" is the vertical offset.) \
+If you specify vspread or hspread they will overwrite all Level 0 nodes' positions.
+
 ### Output Formats
 
 While generally you would write a CSV file for importing into iThoughts, you can also export the data to:
