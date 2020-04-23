@@ -261,7 +261,7 @@ class CSVTree:
                         if colourNumber > len(iThoughtsColours):
                             sys.stderr.write(
                                 f"Erroneous colour value {colourNumber} "
-                                f"(Pattern was: '{criterion.pattern')." + "\n"
+                                f"(Pattern was: '{criterion.pattern}')." + "\n"
                             )
 
                         else:
