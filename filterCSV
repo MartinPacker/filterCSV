@@ -424,18 +424,11 @@ class CSVTree:
         return output
 
     def calculateMaximumLevel(self):
-        return self._calculateMaximumLevel(0)
-
-    def _calculateMaximumLevel(self, maximumLevel):
-        level = int(self.data["level"])
-        maximumLevel = max(level, maximumLevel)
-
-        for childNode in self.childNodes:
-            maximumLevel = max(
-                maximumLevel, childNode._calculateMaximumLevel(maximumLevel)
-            )
-
-        return maximumLevel
+        """
+        maximum level is the max of this level and the levels of all childNodes.
+        """
+        return max(int(level) for level in [self.data["level"]]
+                   + [node.data["level"] for node in self.childNodes])
 
     def exportToHTML(self, actionsList):
         action = actionsList[0]
