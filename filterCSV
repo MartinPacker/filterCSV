@@ -261,7 +261,7 @@ class CSVTree:
                         if colourNumber > len(iThoughtsColours):
                             sys.stderr.write(
                                 f"Erroneous colour value {colourNumber} "
-                                f"(Pattern was: '{criterion.pattern').\n"
+                                f"(Pattern was: '{criterion.pattern')." + "\n"
                             )
 
                         else:
@@ -270,12 +270,12 @@ class CSVTree:
                             )
                             sys.stderr.write(
                                 f"{colourNumber} "
-                                f"{iThoughtsColours.getColour(colourNumber)}\n"
+                                f"{iThoughtsColours.getColour(colourNumber)}" + "\n"
                             )
                     else:
                         sys.stderr.write(
                             f"Erroneous action value {action} "
-                            f"(Pattern was: '{criterion.pattern}').\n"
+                            f"(Pattern was: '{criterion.pattern}')." + "\n"
                         )
 
         # Apply filter to children, recursively - if propagation is indicated
@@ -341,13 +341,13 @@ class CSVTree:
                 # Repair just this node
                 self.data["level"] = previousLevel + 1
                 sys.stderr.write(
-                    "Repaired, setting level to {previousLevel + 1}.\n"
+                    f"Repaired, setting level to {previousLevel + 1}." + "\n"
                 )
             elif firstAction == "repairsubtree":
                 # Repair the whole subtree
                 sys.stderr.write(
                     "Repaired this node (setting its level to "
-                    f"{previousLevel + 1}) and all its child nodes.\n"
+                    f"{previousLevel + 1}) and all its child nodes." + "\n"
                 )
                 self.repairSubtreeLevels(previousLevel)
             elif firstAction == "stop":
@@ -359,7 +359,7 @@ class CSVTree:
         else:
             if previousLevel > -2:
                 sys.stderr.write(self.data["cell"].ljust(40) + " OK:   ")
-                sys.stderr.write(f" Found level {level}.\n")
+                sys.stderr.write(f" Found level {level}." + "\n")
         for childNode in self.childNodes:
             childNode._checkHierarchy(previousLevel + 1, actionsList)
 
@@ -401,7 +401,7 @@ class CSVTree:
                     + self.data["cell"]
                 )
                 if note:
-                    output.append(f"<br/><br/>{note}\n")
+                    output.append(f"<br/><br/>{note}" + "\n")
             else:
                 output.append(
                     "\n"
