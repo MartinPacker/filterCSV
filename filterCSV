@@ -1242,27 +1242,26 @@ if __name__ == "__main__":
     # In some cases the "match criterion" is a command and the "actions list"
     # contains parameters for that command. e.g. "markdown"
     for parmPair, matchCriterion in enumerate(matchCriteria):
+        pattern = matchCriterion.pattern.lower()
         actionsList = actionsLists[parmPair]
         if actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
-        elif matchCriterion.pattern.lower() == "check":
+        elif pattern == "check":
             csvTree.checkHierarchy(actionsList)
-        elif matchCriterion.pattern.lower() == "markdown":
-            writeOutput(csvTree.exportToMarkdown(actionsList))
-            sys.exit()
-        elif matchCriterion.pattern.lower() == "html":
-            writeOutput(csvTree.exportToHTML(actionsList))
-            sys.exit()
-        elif matchCriterion.pattern.lower() == "xml":
-            writeOutput(csvTree.exportToXML(actionsList))
-            sys.exit()
-        elif matchCriterion.pattern.lower() == "promote":
+        elif pattern == "promote":
             csvTree.promoteLevel(actionsList)
-        elif matchCriterion.pattern.lower() == "stats":
-            writeOutput(csvTree.writeStatistics(actionsList))
-            sys.exit()
         else:
-            csvTree.applyFilter(matchCriterion, actionsList)
+            func = {
+                "markdown": csvTree.exportToMarkdown,
+                "html": csvTree.exportToHTML,
+                "stats": csvTree.writeStatistics,
+                "xml": csvTree.exportToXML,
+            }.get(pattern)
+            if func:
+                writeOutput(func(actionsList))
+                sys.exit()
+            else:
+                csvTree.applyFilter(matchCriterion, actionsList)
 
     # Write the header row
     CSVwriter.writerow(
