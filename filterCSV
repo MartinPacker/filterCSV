@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 filterCSV - Augments matching CSV files - according to iThoughts requirements
 
@@ -32,7 +32,7 @@ from string import hexdigits
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.1"
-filterCSV_date = "22 April, 2020"
+filterCSV_date = "23 April, 2020"
 
 
 class iThoughtsColours:
@@ -164,6 +164,34 @@ class iThoughtsShapes:
         return self.shapeNumber
 
 
+class iThoughtsSpread:
+    horizontalPosition = 0
+    horizontalIncrement = 0
+    verticalPosition = 0
+    verticalIncrement = 0
+
+    def resetHorizontalSpread(self, horizontalIncrement):
+        self.horizontalPosition = 0
+        self.horizontalIncrement = horizontalIncrement
+
+    def nextHorizontal(self):
+        x = self.horizontalPosition
+        self.horizontalPosition += self.horizontalIncrement
+        return x
+
+    def resetVerticalSpread(self, verticalIncrement):
+        self.verticalPosition = 0
+        self.verticalIncrement = verticalIncrement
+
+    def nextVertical(self):
+        y = self.verticalPosition
+        self.verticalPosition += self.verticalIncrement
+        return y
+
+    def getNextPosition(self):
+        return self.nextHorizontal(), self.nextVertical()
+
+
 class CSVTree:
     def __init__(self, shape, colour, note, level, position, cell):
         """
@@ -287,8 +315,9 @@ class CSVTree:
         # Compose this node's line - if not root node
         level = int(self.data["level"])
         if level > -1:
-            line = [self.data[key] for key
-                    in "colour note position shape level".split()]
+            line = [
+                self.data[key] for key in "colour note position shape level".split()
+            ]
             line += [""] * int(self.data["level"])
             line.append(self.data["cell"])
             outputArray.append(line)
@@ -417,8 +446,11 @@ class CSVTree:
         """
         maximum level is the max of this level and the levels of all childNodes.
         """
-        return max(int(level) for level in [self.data["level"]]
-                   + [node.data["level"] for node in self.childNodes])
+        return max(
+            int(level)
+            for level in [self.data["level"]]
+            + [node.data["level"] for node in self.childNodes]
+        )
 
     def exportToHTML(self, actionsList):
         action = actionsList[0]
@@ -893,6 +925,40 @@ class CSVTree:
 
         return [nodesAtLevel, distinctNodeValuesAtLevel]
 
+    def doHorizontalSpread(self, actionsList):
+        self._doSpread("horizontal", actionsList)
+
+    def doVerticalSpread(self, actionsList):
+        self._doSpread("vertical", actionsList)
+
+    def _doSpread(self, direction, actionsList):
+        # Spread the level 0 nodes - either vertically or horizontally
+
+        # Get the increment
+        action = actionsList[0]
+        if action.isdigit():
+            increment = int(action)
+        else:
+            sys.stderr.write("Increment value is not a positive integer.\n")
+            sys.exit()
+
+        # Set iThoughtsSpread variables up
+        if direction == "horizontal":
+            iThoughtsSpread.resetHorizontalSpread(increment)
+            iThoughtsSpread.resetVerticalSpread(0)
+        else:
+            iThoughtsSpread.resetHorizontalSpread(0)
+            iThoughtsSpread.resetVerticalSpread(increment)
+
+        for childNode in self.childNodes:
+            childNode.data["position"] = (
+                "{"
+                + str(iThoughtsSpread.nextHorizontal())
+                + ","
+                + str(iThoughtsSpread.nextVertical())
+                + "}"
+            )
+
 
 def formatWhitespaceCharacters(whitespace):
     """
@@ -908,11 +974,6 @@ def formatWhitespaceCharacters(whitespace):
     return formattedIndentCharacters
 
 
-def writeOutput(printLines):
-    for line in printLines:
-        print(line)
-
-
 matchCriteria = []
 actionsLists = []
 
@@ -921,6 +982,8 @@ if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
 
     iThoughtsShapes = iThoughtsShapes()
+
+    iThoughtsSpread = iThoughtsSpread()
 
     # Heading for parameters display
     sys.stderr.write("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n\n")
@@ -1237,7 +1300,7 @@ if __name__ == "__main__":
 
         currentNode.data["row"] = row
 
-    # Apply battery of parameter pairs to do the colouring etc
+    # Apply battery of parameter pairs to do the colouring etc.
     # (A row could match more than one and a later one overrides an earlier one)
     # In some cases the "match criterion" is a command and the "actions list"
     # contains parameters for that command. e.g. "markdown"
@@ -1246,22 +1309,27 @@ if __name__ == "__main__":
         actionsList = actionsLists[parmPair]
         if actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
-        elif pattern == "check":
-            csvTree.checkHierarchy(actionsList)
-        elif pattern == "promote":
-            csvTree.promoteLevel(actionsList)
         else:
             func = {
-                "markdown": csvTree.exportToMarkdown,
-                "html": csvTree.exportToHTML,
-                "stats": csvTree.writeStatistics,
-                "xml": csvTree.exportToXML,
+                "check": csvTree.checkHierarchy,
+                "promote": csvTree.promoteLevel,
+                "hspread": csvTree.doHorizontalSpread,
+                "vspread": csvTree.doVerticalSpread,
             }.get(pattern)
             if func:
-                writeOutput(func(actionsList))
-                sys.exit()
+                func(actionsList)
             else:
-                csvTree.applyFilter(matchCriterion, actionsList)
+                func = {
+                    "markdown": csvTree.exportToMarkdown,
+                    "html": csvTree.exportToHTML,
+                    "stats": csvTree.writeStatistics,
+                    "xml": csvTree.exportToXML,
+                }.get(pattern)
+                if func:
+                    print("\n".join(func(actionsList)))
+                    sys.exit()
+                else:
+                    csvTree.applyFilter(matchCriterion, actionsList)
 
     # Write the header row
     CSVwriter.writerow(
