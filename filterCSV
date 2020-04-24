@@ -453,6 +453,14 @@ class CSVTree:
         )
 
     def exportToHTML(self, actionsList):
+        """
+        >>> csv_tree = CSVTree("shape", "colour", "note", 1, 1, "cell")
+        >>> csv_tree.exportToHTML([])
+        junk
+        >>> _ = csv_tree.addChild(CSVTree("shape", "colour", "note", 2, 7, "cell"))
+        >>> csv_tree.exportToHTML(["table"])
+        more junk
+        """
         action = actionsList[0]
 
         # Prime array of output lines
