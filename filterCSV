@@ -296,10 +296,6 @@ class CSVTree:
                             self.data["colour"] = iThoughtsColours.getColour(
                                 colourNumber
                             )
-                            sys.stderr.write(
-                                f"{colourNumber} "
-                                f"{iThoughtsColours.getColour(colourNumber)}" + "\n"
-                            )
                     else:
                         sys.stderr.write(
                             f"Erroneous action value {action} "
