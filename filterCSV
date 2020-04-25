@@ -1100,10 +1100,14 @@ if __name__ == "__main__":
                         sys.stderr.write(str(rowIndent) + " white space characters.")
 
                     sys.stderr.write(
-                        f"Should be multiple of {indent}. Rounding level down to {rowIndent / indent}"
-                        ".\n"
+                        "Should be multiple of "
+                        + str(indent)
+                        + ". Rounding level down to "
+                        + str(rowIndent / indent)
+                        + ".\n"
                     )
-                    sys.stderr.write(f"Line in error ({rowNumber}) is: {cell}" + "\n")
+                    sys.stderr.write(
+                        "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
                     sys.stderr.write(
                         "Leading white space characters: "
                         + formatWhitespaceCharacters(cell[0:rowIndent])
