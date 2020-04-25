@@ -421,7 +421,7 @@ class CSVTree:
             if level > maxHeadingLevel:
                 output.append(
                     "  " * (level - maxHeadingLevel - startingLevel + 2)
-                    f"* {self.data['cell']}"
+                    + f"* {self.data['cell']}"
                 )
                 if note:
                     output.append(f"<br/><br/>{note}" + "\n")
