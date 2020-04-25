@@ -537,8 +537,8 @@ class CSVTree:
             # print list item
             output.append(
                 indent
-                "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
-                f"{colour};'>{self.data['cell']}</span>"
+                + "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
+                + f"{colour};'>{self.data['cell']}</span>"
             )
 
             # Print any note
