@@ -1108,6 +1108,7 @@ if __name__ == "__main__":
                     )
                     sys.stderr.write(
                         "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
+                    )
                     sys.stderr.write(
                         "Leading white space characters: "
                         + formatWhitespaceCharacters(cell[0:rowIndent])
