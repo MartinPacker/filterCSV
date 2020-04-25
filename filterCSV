@@ -906,8 +906,10 @@ class CSVTree:
 
         for childNode in self.childNodes:
             childNode.data["position"] = (
-                f"{{iThoughtsSpread.nextHorizontal()}"
-                f",{iThoughtsSpread.nextVertical()}}"
+                "{"
+                f"{iThoughtsSpread.nextHorizontal()}"
+                f",{iThoughtsSpread.nextVertical()}"
+                "}"
             )
 
 
