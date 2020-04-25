@@ -421,18 +421,15 @@ class CSVTree:
             if level > maxHeadingLevel:
                 output.append(
                     "  " * (level - maxHeadingLevel - startingLevel + 2)
-                    + "* "
-                    + self.data["cell"]
+                    f"* {self.data['cell']}"
                 )
                 if note:
                     output.append(f"<br/><br/>{note}" + "\n")
             else:
                 output.append(
                     "\n"
-                    + "#" * (level + startingLevel)
-                    + " "
-                    + self.data["cell"]
-                    + "\n"
+                    f"{'#' * (level + startingLevel)} {self.data['cell']}"
+                    "\n"
                 )
                 if note:
                     output.append(note + "\n")
@@ -476,7 +473,6 @@ class CSVTree:
 
             # Write nested list
             level, freshOutput = self._exportToHTMLList(action)
-
             output += freshOutput
 
             # Write top-level list stop
@@ -503,10 +499,7 @@ class CSVTree:
             # Print the cell itself, including styling
             output.append(
                 "<td style='border: 1px solid black;border-radius: 5px;background-color: #"
-                + colour
-                + ";'>"
-                + self.data["cell"]
-                + "</td>"
+                f"{colour};'>{self.data['cell']}</td>"
             )
 
             # Print padding empty columns after the cell's column
@@ -516,7 +509,7 @@ class CSVTree:
             # Print any note as a final column
             note = self.data["note"]
             if note:
-                output.append("<td>" + note + "</td>")
+                output.append(f"<td>{note}</td>")
 
             # Print table row end
             output.append("</tr>")
@@ -533,9 +526,7 @@ class CSVTree:
         level = int(self.data["level"])
 
         # Determine the cell background colour
-        colour = self.data["colour"]
-        if colour == "":
-            colour = "FFFFFF"
+        colour = self.data["colour"] or "FFFFFF"
 
         # Determine if there is a note
         note = self.data["note"]
@@ -546,16 +537,13 @@ class CSVTree:
             # print list item
             output.append(
                 indent
-                + "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
-                + colour
-                + ";'>"
-                + self.data["cell"]
-                + "</span>"
+                "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
+                f"{colour};'>{self.data['cell']}</span>"
             )
 
             # Print any note
             if note:
-                output.append(indent + "  <br/><br/>" + note)
+                output.append(f"{indent}  <br/><br/>{note}")
 
             needListElements = len(self.childNodes) > 0
             if needListElements is True:
@@ -573,16 +561,14 @@ class CSVTree:
 
             output.append(indent + "</li>")
 
-        return [level, output]
+        return (level, output)
 
     def exportToXML(self, actionsList):
-        action = actionsList[0]
-
-        if action == "freemind":
-            # Freemind XML export
-            return self.exportToFreemindXML(actionsList)
-        elif action == "opml":
-            return self.exportToOPMLXML(actionList)
+        func = {
+            "freemind": self.exportToFreemindXML,
+            "opml": self.exportToOPMLXML,
+        }.get(actionsList[0])
+        return func(actionList)
 
     def exportToFreemindXML(self, actionsList):
         # Export to XML in the format Freemind, MindNode and iThoughts accept
@@ -617,23 +603,14 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
+            bg_color = f"BACKGROUND_COLOR='#{colour}' " if color else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
             shape = self.data["shape"]
 
             indent = "  " * (level + 1)
-            if colour == "":
-                output.append(indent + "<node TEXT='" + cell + "'>")
-            else:
-                output.append(
-                    indent
-                    + "<node BACKGROUND_COLOR='#"
-                    + colour
-                    + "' TEXT='"
-                    + cell
-                    + "'>"
-                )
+            output.append(f"{indent} + <node {bg_color}TEXT='{cell}'>")
 
             if note:
                 output.append(indent + "  <richcontent TYPE='NOTE'><html>")
@@ -691,23 +668,14 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
+            bg_color = f"BACKGROUND_COLOR='#{colour}' " if color else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
             shape = self.data["shape"]
 
             indent = "  " * (level + 2)
-            if colour == "":
-                printLine = indent + "<outline text='" + cell + "'"
-            else:
-                printLine = (
-                    indent
-                    + "<outline BACKGROUND_COLOR='#"
-                    + colour
-                    + "' text='"
-                    + cell
-                    + "'"
-                )
+            printLine = f"{indent}<outline {bg_color}text='{cell}'"
 
             if note:
                 printLine = printLine + " Note='" + note + "'"
@@ -749,7 +717,7 @@ class CSVTree:
             childNode._markSubtreeMatched()
 
     def _processKeep(self, matchCriterion):
-        if self.isMatch(matchCriterion) == True:
+        if self.isMatch(matchCriterion):
             # mark self and all the ancestors matched
             self._markAncestorsMatched()
 
@@ -764,14 +732,14 @@ class CSVTree:
         for childNode in self.childNodes:
             childNode._deleteUnmarked()
         if self.data["level"] > -1:
-            if self.matched == False:
+            if not self.matched:
                 self.parent.deleteChild(self)
 
     def promoteLevel(self, actionslist):
         # Promote everything at the specified level, deleting parents
         promotedLevel = int(actionslist[0])
         if promotedLevel < 1:
-            sys.stderr.write("Cannot promote level " + str(promotedLevel) + "\n")
+            sys.stderr.write(f"Cannot promote level {promotedLevel}" + "\n")
             sys.exit()
 
         # Get nodes to promote
@@ -780,7 +748,7 @@ class CSVTree:
         # Get their parents, removing duplicates
         parentsToDelete = []
         for node in nodesToPromote:
-            if (node.parent in parentsToDelete) != True:
+            if node.parent not in parentsToDelete:
                 parentsToDelete.append(node.parent)
 
         # Promote each parent's children
@@ -811,7 +779,9 @@ class CSVTree:
         return nodes
 
     def writeStatistics(self, actionslist):
-        # Write statistics in one of a number of formats
+        """
+        Write statistics in one of a number of formats
+        """
 
         # Prime array of output lines
         output = []
@@ -829,9 +799,7 @@ class CSVTree:
                 if levelNodes == 0:
                     break
                 distinctLevelNodes = statistics[1][level]
-                output.append(
-                    str(level) + "," + str(levelNodes) + "," + str(distinctLevelNodes)
-                )
+                output.append(f"{level},{levelNodes},{distinctLevelNodes}")
         elif firstAction == "html":
             output.append("<table>")
             output.append(
@@ -843,9 +811,9 @@ class CSVTree:
                     break
                 distinctLevelNodes = statistics[1][level]
                 output.append("<tr>")
-                output.append("<td>" + str(level) + "</td>")
-                output.append("<td>" + str(levelNodes) + "</td>")
-                output.append("<td>" + str(distinctLevelNodes) + "</td>")
+                output.append(f"<td>{level}</td>")
+                output.append(f"<td>{levelNodes}</td>")
+                output.append(f"<td>{distinctLevelNodes}</td>")
                 output.append("</tr>")
             output.append("</table>")
         elif firstAction == "markdown":
@@ -856,15 +824,7 @@ class CSVTree:
                 if levelNodes == 0:
                     break
                 distinctLevelNodes = statistics[1][level]
-                output.append(
-                    "|"
-                    + str(level)
-                    + "|"
-                    + str(levelNodes)
-                    + "|"
-                    + str(distinctLevelNodes)
-                    + "|"
-                )
+                output.append(f"|{level}|{levelNodes}|{distinctLevelNodes}|")
         elif firstAction == "text":
             output.append("Level Nodes Distinct Nodes")
             for level in range(0, 21):
@@ -872,15 +832,9 @@ class CSVTree:
                 if levelNodes == 0:
                     break
                 distinctLevelNodes = statistics[1][level]
-                output.append(
-                    str(level).rjust(5, " ")
-                    + " "
-                    + str(levelNodes).rjust(5, " ")
-                    + " "
-                    + str(distinctLevelNodes).rjust(14, " ")
-                )
+                output.append(f"{level:>5} {levelNodes:>5} {distinctLevelNodes:>14}")
         else:
-            sys.stderr.write("Invalid format for 'stats': " + firstAction + "\n")
+            sys.stderr.write(f"Invalid format for 'stats': {firstAction}" + "\n")
 
         return output
 
@@ -952,11 +906,8 @@ class CSVTree:
 
         for childNode in self.childNodes:
             childNode.data["position"] = (
-                "{"
-                + str(iThoughtsSpread.nextHorizontal())
-                + ","
-                + str(iThoughtsSpread.nextVertical())
-                + "}"
+                f"{{iThoughtsSpread.nextHorizontal()}"
+                f",{iThoughtsSpread.nextVertical()}}"
             )
 
 
@@ -1032,7 +983,7 @@ if __name__ == "__main__":
 
         parmNumber += 1
 
-        sys.stderr.write(matchCriterion.ljust(40, " ") + " " + actionsString + "\n")
+        sys.stderr.write(f"{matchCriterion:<40} {actionsString}" + "\n")
 
     sys.stderr.write("\n\n")
 
@@ -1129,15 +1080,10 @@ if __name__ == "__main__":
                         sys.stderr.write(str(rowIndent) + " white space characters.")
 
                     sys.stderr.write(
-                        "Should be multiple of "
-                        + str(indent)
-                        + ". Rounding level down to "
-                        + str(rowIndent / indent)
-                        + ".\n"
+                        f"Should be multiple of {indent}. Rounding level down to {rowIndent / indent}"
+                        ".\n"
                     )
-                    sys.stderr.write(
-                        "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
-                    )
+                    sys.stderr.write(f"Line in error ({rowNumber}) is: {cell}" + "\n")
                     sys.stderr.write(
                         "Leading white space characters: "
                         + formatWhitespaceCharacters(cell[0:rowIndent])
@@ -1147,9 +1093,7 @@ if __name__ == "__main__":
                     rowIndentCharacters = cell[0:rowIndent]
                     if rowIndentCharacters != indentCharacters * (rowIndent // indent):
                         sys.stderr.write("Bad indentation characters:\n")
-                        sys.stderr.write(
-                            "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
-                        )
+                        sys.stderr.write(f"Line in error ({rowNumber}) is: {cell}" + "\n")
                         sys.stderr.write(
                             "Leading white space characters: "
                             + formatWhitespaceCharacters(rowIndentCharacters)
