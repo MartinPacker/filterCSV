@@ -603,7 +603,7 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
-            bg_color = f"BACKGROUND_COLOR='#{colour}' " if color else ""
+            bg_color = f"BACKGROUND_COLOR='#{colour}' " if colour else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
@@ -668,7 +668,7 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
-            bg_color = f"BACKGROUND_COLOR='#{colour}' " if color else ""
+            bg_color = f"BACKGROUND_COLOR='#{colour}' " if colour else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
