@@ -603,14 +603,23 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
-            bg_color = f"BACKGROUND_COLOR='#{colour}' " if colour else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
             shape = self.data["shape"]
 
             indent = "  " * (level + 1)
-            output.append(f"{indent} + <node {bg_color}TEXT='{cell}'>")
+            if colour == "":
+                output.append(indent + "<node TEXT='" + cell + "'>")
+            else:
+                output.append(
+                    indent
+                    + "<node BACKGROUND_COLOR='#"
+                    + colour
+                    + "' TEXT='"
+                    + cell
+                    + "'>"
+                )
 
             if note:
                 output.append(indent + "  <richcontent TYPE='NOTE'><html>")
@@ -668,14 +677,23 @@ class CSVTree:
         if level > -1:
             # Print this node
             colour = self.data["colour"]
-            bg_color = f"BACKGROUND_COLOR='#{colour}' " if colour else ""
             cell = self.data["cell"]
 
             note = self.data["note"]
             shape = self.data["shape"]
 
             indent = "  " * (level + 2)
-            printLine = f"{indent}<outline {bg_color}text='{cell}'"
+            if colour == "":
+                printLine = indent + "<outline text='" + cell + "'"
+            else:
+                printLine = (
+                    indent
+                    + "<outline BACKGROUND_COLOR='#"
+                    + colour
+                    + "' text='"
+                    + cell
+                    + "'"
+                )
 
             if note:
                 printLine = printLine + " Note='" + note + "'"
