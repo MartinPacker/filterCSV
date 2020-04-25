@@ -735,7 +735,7 @@ class CSVTree:
             childNode._markSubtreeMatched()
 
     def _processKeep(self, matchCriterion):
-        if self.isMatch(matchCriterion):
+        if self.isMatch(matchCriterion) == True:
             # mark self and all the ancestors matched
             self._markAncestorsMatched()
 
