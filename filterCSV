@@ -67,9 +67,13 @@ class ParameterParser:
             for actionNumber in range(len(actionList)):
                 action = actionList[actionNumber]
                 if action in ("nextcolour", "nextcolor", "nc"):
-                    actionList[actionNumber] = str(iThoughtsColours.getNextColourNumber())
+                    actionList[actionNumber] = str(
+                        iThoughtsColours.getNextColourNumber()
+                    )
                 elif action in ("samecolour", "samecolor", "sc"):
-                    actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
+                    actionList[actionNumber] = str(
+                        iThoughtsColours.getSameColourNumber()
+                    )
                 elif action in ("nextshape", "ns"):
                     actionList[actionNumber] = iThoughtsShapes[
                         iThoughtsShapes.getNextShapeNumber()
@@ -87,14 +91,14 @@ class ParameterParser:
             output.append(matchCriterion.ljust(40, " ") + " " + actionsString)
 
         output.append("\n")
-        
+
         return matchCriteria, actionsLists, output
 
 
 class TreeReader:
     def detectInputStreamType(self, firstLine):
         firstChar = firstLine[0]
-        
+
         if firstLine.find("level0") > -1:
             return "iThoughtsCSV"
         elif firstChar == "<":
@@ -106,26 +110,25 @@ class TreeReader:
         else:
             return "text"
 
-    
-    def findColumn(this,CSVArray,columnName):
+    def findColumn(this, CSVArray, columnName):
         # Returns 0-indexed column if the column name appears in the first LineEnd
         # else -1
         if columnName in CSVArray[0]:
             return CSVArray[0].index(columnName)
         else:
             return -1
-        
-    def injectColumn(this,CSVArray,columnName):
+
+    def injectColumn(this, CSVArray, columnName):
         # Injects the named column at the beginning of each line,
         # with the heading given by columnName
         for rowNumber, _ in enumerate(CSVArray):
             if rowNumber == 0:
-                CSVArray[0].insert(0,columnName)
+                CSVArray[0].insert(0, columnName)
             else:
-                CSVArray[rowNumber].insert(0,"")
-        
+                CSVArray[rowNumber].insert(0, "")
+
         return CSVArray
-        
+
     def ensureMandatoryColumns(self, csvRows):
         # Add a shape column if one is not already present
         if self.findColumn(csvRows, "shape") == -1:
@@ -142,7 +145,7 @@ class TreeReader:
         # Add a colour column if one is not already present
         if self.findColumn(csvRows, "colour") == -1:
             csvRows = self.injectColumn(csvRows, "colour")
-        
+
         # Establish the position of each column - to return
         colourColumn = self.findColumn(csvRows, "colour")
         levelColumn = self.findColumn(csvRows, "level")
@@ -150,8 +153,15 @@ class TreeReader:
         shapeColumn = self.findColumn(csvRows, "shape")
         positionColumn = self.findColumn(csvRows, "position")
 
-        return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn
-    
+        return (
+            csvRows,
+            colourColumn,
+            levelColumn,
+            noteColumn,
+            shapeColumn,
+            positionColumn,
+        )
+
     def readiThoughtsCSVTree(self, inputFile):
         output = []
         # Build array of rows
@@ -160,11 +170,11 @@ class TreeReader:
         for row in reader:
             csvRows.append(row)
 
-        return self.ensureMandatoryColumns(csvRows) +(output,)
+        return self.ensureMandatoryColumns(csvRows) + (output,)
 
     def readMarkdownOrTextTree(self, inputFile):
         output = []
-        
+
         # Build array of rows
         csvRows = []
 
@@ -174,15 +184,18 @@ class TreeReader:
             indent = len(line) - len(line.lstrip())
             if indent > 0:
                 # This is the first line with whitespace at the beginning
-                
+
                 # Save the indentation whitespace
                 indentCharacters = line[0:indent]
 
                 # Print the detected indentation - so user can debug
-                output.append("Indentation detected: " + formatWhitespaceCharacters(indentCharacters))
+                output.append(
+                    "Indentation detected: "
+                    + formatWhitespaceCharacters(indentCharacters)
+                )
 
                 break
-        
+
         # Insert a header row, with attribute columns and a level0 column plus other levels
         csvRows.append(
             [
@@ -220,7 +233,11 @@ class TreeReader:
                 if lineIndent == 1:
                     output.append("Bad indentation: 1 white space character.")
                 else:
-                    output.append("Bad indentation:" + str(lineIndent) + " white space characters.")
+                    output.append(
+                        "Bad indentation:"
+                        + str(lineIndent)
+                        + " white space characters."
+                    )
 
                 output.append(
                     "Should be multiple of "
@@ -229,9 +246,7 @@ class TreeReader:
                     + str(lineIndent / indent)
                     + "."
                 )
-                output.append(
-                    "Line in error (" + str(rowNumber) + ") is: " + cell
-                )
+                output.append("Line in error (" + str(rowNumber) + ") is: " + cell)
                 output.append(
                     "Leading white space characters: "
                     + formatWhitespaceCharacters(cell[0:rowIndent])
@@ -240,16 +255,14 @@ class TreeReader:
                 lineIndentCharacters = line[0:lineIndent]
                 if lineIndentCharacters != indentCharacters * (lineIndent // indent):
                     output.append("Bad indentation characters:")
-                    output.append(
-                        "Line in error (" + str(lineNumber) + ") is: " + line
-                    )
+                    output.append("Line in error (" + str(lineNumber) + ") is: " + line)
                     output.append(
                         "Leading white space characters: "
                         + formatWhitespaceCharacters(lineIndentCharacters)
                     )
 
             newRow = []
-            
+
             level = lineIndent // indent
             newRow.append(str(level))
 
@@ -261,55 +274,81 @@ class TreeReader:
             cleanedLine = line.lstrip().rstrip()
             if cleanedLine[0:2] == "* ":
                 cleanedLine = cleanedLine[2:]
-                
+
             # Add the cleaned line at the appropriate level
             newRow.append(cleanedLine)
-            
+
             # Add this new row
             csvRows.append(newRow)
 
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
-       
     def createCSVArray(self):
         output = []
-        
+
         # Read in whatever's in stdin - which might not be CSV
         inputFile = sys.stdin.readlines()
 
         # Detect the input stream type
         inputType = self.detectInputStreamType(inputFile[0])
-        
+
         output.append(f"Input type detected as '{inputType}'.\n")
-        
+
         # Depending on detected input type create a create CSV-like array,
         # including mandatory columns
         if inputType == "iThoughtsCSV":
-            csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output1 = self.readiThoughtsCSVTree(inputFile)
+            (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output1,
+            ) = self.readiThoughtsCSVTree(inputFile)
             output += output1
-            return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output
-        elif inputType in ["markdown","text"]:
-            csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output1 = self.readMarkdownOrTextTree(inputFile)
+            return (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output,
+            )
+        elif inputType in ["markdown", "text"]:
+            (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output1,
+            ) = self.readMarkdownOrTextTree(inputFile)
             output += output1
-            return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output
+            return (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output,
+            )
+
 
 class TreeWriter:
     def writeTreeAsCSV(self):
 
         CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
 
-
         # Write the header row
-        headerRow = [
-                "colour",
-                "note",
-                "position",
-                "shape",
-                "level"]
-        levels = csvTree.calculateMaximumLevel() +1
+        headerRow = ["colour", "note", "position", "shape", "level"]
+        levels = csvTree.calculateMaximumLevel() + 1
 
         for level in range(levels):
-            headerRow.append("level" + str(level)) 
+            headerRow.append("level" + str(level))
 
         CSVwriter.writerow(headerRow)
 
@@ -319,6 +358,7 @@ class TreeWriter:
 
         for row in outputArray:
             CSVwriter.writerow(row)
+
 
 class iThoughtsColours:
     light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
@@ -723,7 +763,7 @@ class CSVTree:
 
         return output
 
-    def calculateMaximumLevel(self, level =0):
+    def calculateMaximumLevel(self, level=0):
         """
         maximum level is the max of this level and the levels of all childNodes, recursively through their descendents
         """
@@ -731,9 +771,9 @@ class CSVTree:
         if thisLevel > level:
             level = thisLevel
         for childNode in self.childNodes:
-           level = childNode.calculateMaximumLevel(level)
+            level = childNode.calculateMaximumLevel(level)
         return level
- 
+
     def exportToHTML(self, actionsList):
         action = actionsList[0]
 
@@ -1261,23 +1301,29 @@ def writeOutput(printLines):
         print(line)
 
 
-
 if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
 
     iThoughtsShapes = iThoughtsShapes()
 
     iThoughtsSpread = iThoughtsSpread()
-    
+
     matchCriteria, actionsLists, output = ParameterParser().getParameters()
 
     writeOutput(output)
 
     #  Convert stdin data into CSV array - in whatever form it was
-    csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output = TreeReader().createCSVArray()
+    (
+        csvRows,
+        colourColumn,
+        levelColumn,
+        noteColumn,
+        shapeColumn,
+        positionColumn,
+        output,
+    ) = TreeReader().createCSVArray()
 
     writeOutput(output)
-
 
     # Build the tree from the CSV array
     currentLevel = -1
@@ -1353,4 +1399,3 @@ if __name__ == "__main__":
             csvTree.applyFilter(matchCriterion, actionsList)
 
     TreeWriter().writeTreeAsCSV()
-
