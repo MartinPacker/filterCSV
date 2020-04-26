@@ -31,9 +31,294 @@ from string import hexdigits
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.1"
-filterCSV_date = "23 April, 2020"
+filterCSV_level = "1.2"
+filterCSV_date = "26 April, 2020"
 
+
+class ParameterParser:
+    def getParameters(self):
+        matchCriteria = []
+        actionsLists = []
+
+        output = []
+
+        # Heading for parameters display
+        output.append("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n")
+        output.append("Criterion".ljust(40, " ") + " Actions")
+        output.append("---------".ljust(40, " ") + " -------")
+
+        # Read in pairs of parameters from command line
+        parmNumber = 1
+        for parmPair in range((len(sys.argv) - 1) // 2):
+            # Handle match criterion
+            matchCriterion = sys.argv[parmNumber]
+            if matchCriterion == "all":
+                matchCriteria.append(re.compile(".*"))
+            else:
+                matchCriteria.append(re.compile(matchCriterion))
+
+            parmNumber += 1
+
+            # Handle the actions that go with this match criterion
+            actionsString = sys.argv[parmNumber].lower()
+            actionList = actionsString.split()
+
+            # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as the colour number or shape
+            for actionNumber in range(len(actionList)):
+                action = actionList[actionNumber]
+                if action in ("nextcolour", "nextcolor", "nc"):
+                    actionList[actionNumber] = str(iThoughtsColours.getNextColourNumber())
+                elif action in ("samecolour", "samecolor", "sc"):
+                    actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
+                elif action in ("nextshape", "ns"):
+                    actionList[actionNumber] = iThoughtsShapes[
+                        iThoughtsShapes.getNextShapeNumber()
+                    ]
+                elif action in ("sameshape", "ss"):
+                    actionList[actionNumber] = iThoughtsShapes[
+                        iThoughtsShapes.getSameShapeNumber()
+                    ]
+
+            # Add actions list to list of actions lists
+            actionsLists.append(actionList)
+
+            parmNumber += 1
+
+            output.append(matchCriterion.ljust(40, " ") + " " + actionsString)
+
+        output.append("\n")
+        
+        return matchCriteria, actionsLists, output
+
+
+class TreeReader:
+    def detectInputStreamType(self, firstLine):
+        firstChar = firstLine[0]
+        
+        if firstLine.find("level0") > -1:
+            return "iThoughtsCSV"
+        elif firstChar == "<":
+            return "XML"
+        elif firstChar in ["#", "*"]:
+            return "markdown"
+        elif firstChar == '"':
+            return "CSV"
+        else:
+            return "text"
+
+    
+    def findColumn(this,CSVArray,columnName):
+        # Returns 0-indexed column if the column name appears in the first LineEnd
+        # else -1
+        if columnName in CSVArray[0]:
+            return CSVArray[0].index(columnName)
+        else:
+            return -1
+        
+    def injectColumn(this,CSVArray,columnName):
+        # Injects the named column at the beginning of each line,
+        # with the heading given by columnName
+        for rowNumber, _ in enumerate(CSVArray):
+            if rowNumber == 0:
+                CSVArray[0].insert(0,columnName)
+            else:
+                CSVArray[rowNumber].insert(0,"")
+        
+        return CSVArray
+        
+    def ensureMandatoryColumns(self, csvRows):
+        # Add a shape column if one is not already present
+        if self.findColumn(csvRows, "shape") == -1:
+            csvRows = self.injectColumn(csvRows, "shape")
+
+        # Add a position column if one is not already present
+        if self.findColumn(csvRows, "position") == -1:
+            csvRows = self.injectColumn(csvRows, "position")
+
+        # Add a note column if one is not already present
+        if self.findColumn(csvRows, "note") == -1:
+            csvRows = self.injectColumn(csvRows, "note")
+
+        # Add a colour column if one is not already present
+        if self.findColumn(csvRows, "colour") == -1:
+            csvRows = self.injectColumn(csvRows, "colour")
+        
+        # Establish the position of each column - to return
+        colourColumn = self.findColumn(csvRows, "colour")
+        levelColumn = self.findColumn(csvRows, "level")
+        noteColumn = self.findColumn(csvRows, "note")
+        shapeColumn = self.findColumn(csvRows, "shape")
+        positionColumn = self.findColumn(csvRows, "position")
+
+        return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn
+    
+    def readiThoughtsCSVTree(self, inputFile):
+        output = []
+        # Build array of rows
+        csvRows = []
+        reader = csv.reader(inputFile)
+        for row in reader:
+            csvRows.append(row)
+
+        return self.ensureMandatoryColumns(csvRows) +(output,)
+
+    def readMarkdownOrTextTree(self, inputFile):
+        output = []
+        
+        # Build array of rows
+        csvRows = []
+
+        # Work out what an indent would be - in numbers of characters per level
+        indent = -1
+        for line in inputFile:
+            indent = len(line) - len(line.lstrip())
+            if indent > 0:
+                # This is the first line with whitespace at the beginning
+                
+                # Save the indentation whitespace
+                indentCharacters = line[0:indent]
+
+                # Print the detected indentation - so user can debug
+                output.append("Indentation detected: " + formatWhitespaceCharacters(indentCharacters))
+
+                break
+        
+        # Insert a header row, with attribute columns and a level0 column plus other levels
+        csvRows.append(
+            [
+                "level",
+                "level0",
+                "level1",
+                "level2",
+                "level3",
+                "level4",
+                "level5",
+                "level6",
+                "level7",
+                "level8",
+                "level9",
+                "level10",
+                "level11",
+                "level12",
+                "level13",
+                "level14",
+                "level15",
+                "level16",
+                "level17",
+                "level18",
+                "level19",
+                "level20",
+            ],
+        )
+
+        # Add a level column if one is not already present, and move the text into the right
+        # level - for each data line
+        for lineNumber, line in enumerate(inputFile):
+            # A data line so work out how many levels deep it is indented
+            lineIndent = len(line) - len(line.lstrip())
+            if lineIndent % indent > 0:
+                if lineIndent == 1:
+                    output.append("Bad indentation: 1 white space character.")
+                else:
+                    output.append("Bad indentation:" + str(lineIndent) + " white space characters.")
+
+                output.append(
+                    "Should be multiple of "
+                    + str(indent)
+                    + ". Rounding level down to "
+                    + str(lineIndent / indent)
+                    + "."
+                )
+                output.append(
+                    "Line in error (" + str(rowNumber) + ") is: " + cell
+                )
+                output.append(
+                    "Leading white space characters: "
+                    + formatWhitespaceCharacters(cell[0:rowIndent])
+                )
+            else:
+                lineIndentCharacters = line[0:lineIndent]
+                if lineIndentCharacters != indentCharacters * (lineIndent // indent):
+                    output.append("Bad indentation characters:")
+                    output.append(
+                        "Line in error (" + str(lineNumber) + ") is: " + line
+                    )
+                    output.append(
+                        "Leading white space characters: "
+                        + formatWhitespaceCharacters(lineIndentCharacters)
+                    )
+
+            newRow = []
+            
+            level = lineIndent // indent
+            newRow.append(str(level))
+
+            # Insert blank cells - according to level
+            for l in range(level):
+                newRow.append("")
+
+            # Clean the line text to remove any list item marker
+            cleanedLine = line.lstrip().rstrip()
+            if cleanedLine[0:2] == "* ":
+                cleanedLine = cleanedLine[2:]
+                
+            # Add the cleaned line at the appropriate level
+            newRow.append(cleanedLine)
+            
+            # Add this new row
+            csvRows.append(newRow)
+
+        return self.ensureMandatoryColumns(csvRows) + (output,)
+
+       
+    def createCSVArray(self):
+        output = []
+        
+        # Read in whatever's in stdin - which might not be CSV
+        inputFile = sys.stdin.readlines()
+
+        # Detect the input stream type
+        inputType = self.detectInputStreamType(inputFile[0])
+        
+        output.append(f"Input type detected as '{inputType}'.\n")
+        
+        # Depending on detected input type create a create CSV-like array,
+        # including mandatory columns
+        if inputType == "iThoughtsCSV":
+            csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output1 = self.readiThoughtsCSVTree(inputFile)
+            output += output1
+            return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output
+        elif inputType in ["markdown","text"]:
+            csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output1 = self.readMarkdownOrTextTree(inputFile)
+            output += output1
+            return csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output
+
+class TreeWriter:
+    def writeTreeAsCSV(self):
+
+        CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
+
+
+        # Write the header row
+        headerRow = [
+                "colour",
+                "note",
+                "position",
+                "shape",
+                "level"]
+        levels = csvTree.calculateMaximumLevel() +1
+
+        for level in range(levels):
+            headerRow.append("level" + str(level)) 
+
+        CSVwriter.writerow(headerRow)
+
+        # Write out the resulting CSV data
+        outputArray = []
+        outputArray = csvTree.writeCSVTree(outputArray)
+
+        for row in outputArray:
+            CSVwriter.writerow(row)
 
 class iThoughtsColours:
     light_pastel = """FFB2B2 FFD8B2 FFFFB2 D8FFB2 B2FFB2 B2FFD8
@@ -438,16 +723,17 @@ class CSVTree:
 
         return output
 
-    def calculateMaximumLevel(self):
+    def calculateMaximumLevel(self, level =0):
         """
-        maximum level is the max of this level and the levels of all childNodes.
+        maximum level is the max of this level and the levels of all childNodes, recursively through their descendents
         """
-        return max(
-            int(level)
-            for level in [self.data["level"]]
-            + [node.data["level"] for node in self.childNodes]
-        )
-
+        thisLevel = int(self.data["level"])
+        if thisLevel > level:
+            level = thisLevel
+        for childNode in self.childNodes:
+           level = childNode.calculateMaximumLevel(level)
+        return level
+ 
     def exportToHTML(self, actionsList):
         action = actionsList[0]
 
@@ -975,9 +1261,6 @@ def writeOutput(printLines):
         print(line)
 
 
-matchCriteria = []
-actionsLists = []
-
 
 if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
@@ -985,281 +1268,18 @@ if __name__ == "__main__":
     iThoughtsShapes = iThoughtsShapes()
 
     iThoughtsSpread = iThoughtsSpread()
+    
+    matchCriteria, actionsLists, output = ParameterParser().getParameters()
 
-    # Heading for parameters display
-    sys.stderr.write("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n\n")
-    sys.stderr.write("Criterion".ljust(40, " ") + " Actions\n")
-    sys.stderr.write("---------".ljust(40, " ") + " -------\n")
+    writeOutput(output)
 
-    # Read in pairs of parameters from command line
-    parmNumber = 1
-    for parmPair in range((len(sys.argv) - 1) // 2):
-        # Handle match criterion
-        matchCriterion = sys.argv[parmNumber]
-        if matchCriterion == "all":
-            matchCriteria.append(re.compile(".*"))
-        else:
-            matchCriteria.append(re.compile(matchCriterion))
+    #  Convert stdin data into CSV array - in whatever form it was
+    csvRows, colourColumn, levelColumn, noteColumn, shapeColumn, positionColumn, output = TreeReader().createCSVArray()
 
-        parmNumber += 1
+    writeOutput(output)
 
-        # Handle the actions that go with this match criterion
-        actionsString = sys.argv[parmNumber].lower()
-        actionList = actionsString.split()
 
-        # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as the colour number or shape
-        for actionNumber in range(len(actionList)):
-            action = actionList[actionNumber]
-            if action in ("nextcolour", "nextcolor", "nc"):
-                actionList[actionNumber] = str(iThoughtsColours.getNextColourNumber())
-            elif action in ("samecolour", "samecolor", "sc"):
-                actionList[actionNumber] = str(iThoughtsColours.getSameColourNumber())
-            elif action in ("nextshape", "ns"):
-                actionList[actionNumber] = iThoughtsShapes[
-                    iThoughtsShapes.getNextShapeNumber()
-                ]
-            elif action in ("sameshape", "ss"):
-                actionList[actionNumber] = iThoughtsShapes[
-                    iThoughtsShapes.getSameShapeNumber()
-                ]
-
-        # Add actions list to list of actions lists
-        actionsLists.append(actionList)
-
-        parmNumber += 1
-
-        sys.stderr.write(matchCriterion.ljust(40, " ") + " " + actionsString + "\n")
-
-    sys.stderr.write("\n\n")
-
-    # Build array of rows
-    csvRows = []
-    with sys.stdin as csvfile:
-        reader = csv.reader(csvfile)
-
-        for row in reader:
-            csvRows.append(row)
-
-    # Find colour and level cells
-    colourColumn = -1
-    levelColumn = -1
-    noteColumn = -1
-    shapeColumn = -1
-    positionColumn = -1
-
-    cellNumber = 0
-    for cell in csvRows[0]:
-        if cell == "colour":
-            colourColumn = cellNumber
-        elif cell == "level":
-            levelColumn = cellNumber
-        elif cell == "note":
-            noteColumn = cellNumber
-        elif cell == "shape":
-            shapeColumn = cellNumber
-        elif cell == "position":
-            positionColumn = cellNumber
-        cellNumber += 1
-
-    if levelColumn == -1:
-        # This is a case where the input file is not valid for iThoughts
-
-        # Work out what an indent would be - in numbers of characters per level
-        indent = -1
-        for row in csvRows:
-            cell = row[0]
-            indent = len(cell) - len(cell.lstrip())
-            if indent > 0:
-                # This is the first line with whitespace at the beginning
-                sys.stderr.write("Indentation detected: ")
-
-                # Save the indentation whitespace
-                indentCharacters = cell[0:indent]
-
-                # Print the detected indentation - so user can debug
-                sys.stderr.write(formatWhitespaceCharacters(indentCharacters) + "\n")
-
-                break
-        # Insert a header row, with a level column and a level0 column
-        csvRows.insert(
-            0,
-            [
-                "level",
-                "level0",
-                "level1",
-                "level2",
-                "level3",
-                "level4",
-                "level5",
-                "level6",
-                "level7",
-                "level8",
-                "level9",
-                "level10",
-                "level11",
-                "level12",
-                "level13",
-                "level14",
-                "level15",
-                "level16",
-                "level17",
-                "level18",
-                "level19",
-                "level20",
-            ],
-        )
-
-        # Add a level column if one is not already present, and move the text into the right
-        # level
-        emptyCell = ""
-        for rowNumber, csvRow in enumerate(csvRows):
-            if rowNumber > 0:
-                # A data row so work out how many levels deep it is indented
-                cell = csvRow[0]
-                rowIndent = len(cell) - len(cell.lstrip())
-                if rowIndent % indent > 0:
-                    sys.stderr.write("Bad indentation: ")
-                    if rowIndent == 1:
-                        sys.stderr.write("1 white space character.")
-                    else:
-                        sys.stderr.write(str(rowIndent) + " white space characters.")
-
-                    sys.stderr.write(
-                        "Should be multiple of "
-                        + str(indent)
-                        + ". Rounding level down to "
-                        + str(rowIndent / indent)
-                        + ".\n"
-                    )
-                    sys.stderr.write(
-                        "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
-                    )
-                    sys.stderr.write(
-                        "Leading white space characters: "
-                        + formatWhitespaceCharacters(cell[0:rowIndent])
-                        + "\n"
-                    )
-                else:
-                    rowIndentCharacters = cell[0:rowIndent]
-                    if rowIndentCharacters != indentCharacters * (rowIndent // indent):
-                        sys.stderr.write("Bad indentation characters:\n")
-                        sys.stderr.write(
-                            "Line in error (" + str(rowNumber) + ") is: " + cell + "\n"
-                        )
-                        sys.stderr.write(
-                            "Leading white space characters: "
-                            + formatWhitespaceCharacters(rowIndentCharacters)
-                            + "\n"
-                        )
-
-                level = rowIndent // indent
-                csvRows[rowNumber].insert(0, str(level))
-
-                # Replace text cell with cleaned version of itself
-                cleanedCell = cell.lstrip()
-                if cleanedCell[0:2] == "* ":
-                    cleanedCell = cleanedCell[2:]
-                csvRows[rowNumber][1] = cleanedCell
-
-                # Insert blank cells - according to level
-                for l in range(level):
-                    csvRows[rowNumber].insert(1, "")
-
-        levelColumn = 0
-
-        #  Increment any other columns that exists' column numbers
-        if colourColumn != -1:
-            colourColumn += 1
-        if noteColumn != -1:
-            noteColumn += 1
-        if shapeColumn != -1:
-            shapeColumn += 1
-
-    if positionColumn == -1:
-        # Add a position column if one is not already present
-        for rowNumber in range(len(csvRows)):
-            if rowNumber == 0:
-                csvRows[rowNumber].insert(0, "position")
-            else:
-                csvRows[rowNumber].insert(0, "")
-        positionColumn = 0
-
-        #  Increment any other columns that exists' column numbers
-        if levelColumn != -1:
-            levelColumn += 1
-        if colourColumn != -1:
-            colourColumn += 1
-        if noteColumn != -1:
-            noteColumn += 1
-        if shapeColumn != -1:
-            shapeColumn += 1
-
-    if noteColumn == -1:
-        # Add a note column if one is not already present
-        for rowNumber in range(len(csvRows)):
-            if rowNumber == 0:
-                csvRows[rowNumber].insert(0, "note")
-            else:
-                csvRows[rowNumber].insert(0, "")
-        noteColumn = 0
-
-        #  Increment any other columns that exists' column numbers
-        if levelColumn != -1:
-            levelColumn += 1
-        if colourColumn != -1:
-            colourColumn += 1
-        if positionColumn != -1:
-            positionColumn += 1
-        if shapeColumn != -1:
-            shapeColumn += 1
-    else:
-        if noteColumn == len(csvRows[0]) - 1:
-            for rowNumber in range(1, len(csvRows)):
-                if len(csvRows[rowNumber]) < noteColumn + 1:
-                    for r in range(len(csvRows[rowNumber]), noteColumn + 1):
-                        csvRows[rowNumber].append("")
-
-    if colourColumn == -1:
-        # Add a colour column if one is not already present
-        for rowNumber in range(len(csvRows)):
-            if rowNumber == 0:
-                csvRows[rowNumber].insert(0, "colour")
-            else:
-                csvRows[rowNumber].insert(0, "")
-        colourColumn = 0
-
-        #  Increment any other columns that exists' column numbers
-        if levelColumn != -1:
-            levelColumn += 1
-        if positionColumn != -1:
-            positionColumn += 1
-        if noteColumn != -1:
-            noteColumn += 1
-        if shapeColumn != -1:
-            shapeColumn += 1
-
-    if shapeColumn == -1:
-        # Add a shape column if one is not already present
-        for rowNumber in range(len(csvRows)):
-            if rowNumber == 0:
-                csvRows[rowNumber].insert(0, "shape")
-            else:
-                csvRows[rowNumber].insert(0, "")
-        shapeColumn = 0
-
-        #  Increment any other columns that exists' column numbers
-        if levelColumn != -1:
-            levelColumn += 1
-        if colourColumn != -1:
-            colourColumn += 1
-        if noteColumn != -1:
-            noteColumn += 1
-        if positionColumn != -1:
-            positionColumn += 1
-
-    CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
-
-    # Build the tree
+    # Build the tree from the CSV array
     currentLevel = -1
     csvTree = CSVTree("", "", "", currentLevel, "", "")
     currentNode = csvTree
@@ -1332,41 +1352,5 @@ if __name__ == "__main__":
         else:
             csvTree.applyFilter(matchCriterion, actionsList)
 
-    # Write the header row
-    CSVwriter.writerow(
-        [
-            "colour",
-            "note",
-            "position",
-            "shape",
-            "level",
-            "level0",
-            "level1",
-            "level2",
-            "level3",
-            "level4",
-            "level5",
-            "level6",
-            "level7",
-            "level8",
-            "level9",
-            "level10",
-            "level11",
-            "level12",
-            "level13",
-            "level14",
-            "level15",
-            "level16",
-            "level17",
-            "level18",
-            "level19",
-            "level20",
-        ]
-    )
+    TreeWriter().writeTreeAsCSV()
 
-    # Write out the resulting CSV data
-    outputArray = []
-    outputArray = csvTree.writeCSVTree(outputArray)
-
-    for row in outputArray:
-        CSVwriter.writerow(row)
