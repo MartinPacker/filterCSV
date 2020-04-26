@@ -61,16 +61,16 @@ def test_writeCSVTree():
     csv_tree = filterCSV.CSVTree(*data_fields)
     csv_tree.data["level"] = 1
     assert csv_tree.writeCSVTree(outputArray) == ['a', 'b', 'c',
-        ['colour', 'note', 'position', 'shape', 1, '', 'cell']
+        ['colour', 'note', 'position', 'shape', 1, '', 'cell']  # noqa: E128
     ]
     csv_tree.data["level"] = 0
     assert csv_tree.writeCSVTree(outputArray) == ['a', 'b', 'c',
-        ['colour', 'note', 'position', 'shape', 1, '', 'cell'],
+        ['colour', 'note', 'position', 'shape', 1, '', 'cell'],  # noqa: E128
         ['colour', 'note', 'position', 'shape', 0, 'cell']
     ]
     csv_tree.data["level"] = -1
     assert csv_tree.writeCSVTree(outputArray) == ['a', 'b', 'c',
-        ['colour', 'note', 'position', 'shape', 1, '', 'cell'],
+        ['colour', 'note', 'position', 'shape', 1, '', 'cell'],  # noqa: E128
         ['colour', 'note', 'position', 'shape', 0, 'cell']
     ]
 
@@ -87,7 +87,9 @@ def test_formatWhitespaceCharacters(whitespace, expected):
     assert filterCSV.formatWhitespaceCharacters(whitespace) == expected
 
 
-def test_no_spaces(whitespace=string.ascii_letters+string.digits+string.punctuation):
+def test_no_spaces(
+    whitespace=string.ascii_letters + string.digits + string.punctuation
+):
     s = filterCSV.formatWhitespaceCharacters(whitespace)
     assert "s" not in s
     assert "p" not in s
