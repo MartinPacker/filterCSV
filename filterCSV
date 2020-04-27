@@ -13,7 +13,7 @@ Commentary to stderr
 Command line parameters are pairs of:
 
 1) A specifier. This is a regular expression to match. (A special value 'all' matches any value)
-2) An action or sequence of actions. 
+2) An action or sequence of actions.
 
 Actions can be:
 
@@ -1071,7 +1071,7 @@ class CSVTree:
             childNode._markSubtreeMatched()
 
     def _processKeep(self, matchCriterion):
-        if self.isMatch(matchCriterion) == True:
+        if self.isMatch(matchCriterion) is True:
             # mark self and all the ancestors matched
             self._markAncestorsMatched()
 
@@ -1086,7 +1086,7 @@ class CSVTree:
         for childNode in self.childNodes:
             childNode._deleteUnmarked()
         if self.data["level"] > -1:
-            if self.matched == False:
+            if not self.matched:
                 self.parent.deleteChild(self)
 
     def promoteLevel(self, actionslist):
@@ -1102,7 +1102,7 @@ class CSVTree:
         # Get their parents, removing duplicates
         parentsToDelete = []
         for node in nodesToPromote:
-            if (node.parent in parentsToDelete) != True:
+            if node.parent not in parentsToDelete:
                 parentsToDelete.append(node.parent)
 
         # Promote each parent's children
