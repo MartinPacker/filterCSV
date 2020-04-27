@@ -1,2 +1,6 @@
-"colour","note","position","shape","level","level0"
+"colour","note","position","shape","level","level0","level1","level2","level3"
+"","","","","0","A"
+"","","","","1","","A2"
+"","","","","2","","","A2A"
+"","","","","3","","","","A2A1"
 "","","","square","0","X"
