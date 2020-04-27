@@ -246,10 +246,10 @@ class TreeReader:
                     + str(lineIndent / indent)
                     + "."
                 )
-                output.append("Line in error (" + str(rowNumber) + ") is: " + cell)
+                output.append("Line in error (" + str(rowNumber) + ") is: " + line)
                 output.append(
                     "Leading white space characters: "
-                    + formatWhitespaceCharacters(cell[0:rowIndent])
+                    + formatWhitespaceCharacters(line[0:lineIndent])
                 )
             else:
                 lineIndentCharacters = line[0:lineIndent]
@@ -904,7 +904,7 @@ class CSVTree:
             # Freemind XML export
             return self.exportToFreemindXML(actionsList)
         elif action == "opml":
-            return self.exportToOPMLXML(actionList)
+            return self.exportToOPMLXML(actionsList)
 
     def exportToFreemindXML(self, actionsList):
         # Export to XML in the format Freemind, MindNode and iThoughts accept
@@ -969,7 +969,7 @@ class CSVTree:
                 output.append(indent + "  </richcontent>")
 
         for childNode in self.childNodes:
-            output += childNode._exportToFreemindXML(actionList)
+            output += childNode._exportToFreemindXML(actionsList)
 
         if level > -1:
             output.append(indent + "</node>")
@@ -1037,7 +1037,7 @@ class CSVTree:
             output.append(printLine + ">")
 
         for childNode in self.childNodes:
-            output += childNode._exportToOPMLXML(actionList)
+            output += childNode._exportToOPMLXML(actionsList)
 
         if level > -1:
             output.append(indent + "</outline>")
