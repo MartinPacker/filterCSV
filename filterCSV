@@ -1287,7 +1287,18 @@ def formatWhitespaceCharacters(whitespace):
     >>> formatWhitespaceCharacters("a b \\t c d")
     '<tab><space><tab><space><tab><space><tab><space><tab>'
     """
-    return "".join("<space>" if c == " " else "<tab>" for c in whitespace)
+    formattedIndentCharacters = ""
+    for c in whitespace:
+        if c == " ":
+            formattedIndentCharacters += "<space>"
+        else:
+            formattedIndentCharacters += "<tab>"
+    return formattedIndentCharacters
+
+
+def writeOutput(printLines):
+    for line in printLines:
+        print(line)
 
 
 if __name__ == "__main__":
@@ -1356,7 +1367,7 @@ if __name__ == "__main__":
 
         currentNode.data["row"] = row
 
-    # Apply battery of parameter pairs to do the colouring etc.
+    # Apply battery of parameter pairs to do the colouring etc
     # (A row could match more than one and a later one overrides an earlier one)
     # In some cases the "match criterion" is a command and the "actions list"
     # contains parameters for that command. e.g. "markdown"
@@ -1364,24 +1375,27 @@ if __name__ == "__main__":
         actionsList = actionsLists[parmPair]
         if actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
+        elif matchCriterion.pattern.lower() == "check":
+            csvTree.checkHierarchy(actionsList)
+        elif matchCriterion.pattern.lower() == "markdown":
+            writeOutput(csvTree.exportToMarkdown(actionsList))
+            sys.exit()
+        elif matchCriterion.pattern.lower() == "html":
+            writeOutput(csvTree.exportToHTML(actionsList))
+            sys.exit()
+        elif matchCriterion.pattern.lower() == "xml":
+            writeOutput(csvTree.exportToXML(actionsList))
+            sys.exit()
+        elif matchCriterion.pattern.lower() == "promote":
+            csvTree.promoteLevel(actionsList)
+        elif matchCriterion.pattern.lower() == "stats":
+            writeOutput(csvTree.writeStatistics(actionsList))
+            sys.exit()
+        elif matchCriterion.pattern.lower() == "hspread":
+            csvTree.doHorizontalSpread(actionsList)
+        elif matchCriterion.pattern.lower() == "vspread":
+            csvTree.doVerticalSpread(actionsList)
         else:
-            func = {
-                "check": csvTree.checkHierarchy,
-                "hspread": csvTree.doHorizontalSpread,
-                "html": csvTree.exportToHTML,
-                "markdown": csvTree.exportToMarkdown,
-                "promote": csvTree.promoteLevel,
-                "stats": csvTree.writeStatistics,
-                "xml": csvTree.exportToXML,
-                "vspread": csvTree.doVerticalSpread,
-            }.get(matchCriterion.pattern.lower())
-            if func:
-                output = func(actionsList)
-                if output:
-                    print("\n".join(output))
-                    sys.exit()
-                # commands that generate no output fall through
-            else:
-                csvTree.applyFilter(matchCriterion, actionsList)
+            csvTree.applyFilter(matchCriterion, actionsList)
 
     TreeWriter().writeTreeAsCSV()
