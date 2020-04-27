@@ -52,6 +52,12 @@ def test_calculateMaximumLevel():
     child.data["level"] = 4
     csv_tree.addChild(child)
     assert csv_tree.calculateMaximumLevel() == 4
+    grandchild = filterCSV.CSVTree(*["grandchild"] * 6)
+    grandchild.data["level"] = 8
+    child.addChild(grandchild)
+    assert csv_tree.calculateMaximumLevel() == 8
+    assert child.calculateMaximumLevel() == 8
+    assert grandchild.calculateMaximumLevel() == 8
     csv_tree.deleteChild(child)
     assert csv_tree.calculateMaximumLevel() == 2
 
