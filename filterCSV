@@ -32,7 +32,7 @@ from string import hexdigits
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.2"
-filterCSV_date = "26 April, 2020"
+filterCSV_date = "27 April, 2020"
 
 
 class ParameterParser:
@@ -150,6 +150,7 @@ class TreeReader:
         colourColumn = self.findColumn(csvRows, "colour")
         levelColumn = self.findColumn(csvRows, "level")
         noteColumn = self.findColumn(csvRows, "note")
+        
         shapeColumn = self.findColumn(csvRows, "shape")
         positionColumn = self.findColumn(csvRows, "position")
 
@@ -161,6 +162,16 @@ class TreeReader:
             shapeColumn,
             positionColumn,
         )
+
+    def ensureColumnsPopulated(self,csvRows):
+        # Ensures every column in the header row is present in each subsequent row
+        minimumColumnCount = len(csvRows[0])
+        for rowNumber, row in enumerate(csvRows):
+            extraCells = minimumColumnCount - len(row)
+            if extraCells > 0:
+                csvRows[rowNumber] += [""] * extraCells
+        
+        return csvRows
 
     def readiThoughtsCSVTree(self, inputFile):
         output = []
@@ -306,7 +317,11 @@ class TreeReader:
                 positionColumn,
                 output1,
             ) = self.readiThoughtsCSVTree(inputFile)
+
             output += output1
+
+            csvRows = self.ensureColumnsPopulated(csvRows)
+
             return (
                 csvRows,
                 colourColumn,
@@ -326,7 +341,11 @@ class TreeReader:
                 positionColumn,
                 output1,
             ) = self.readMarkdownOrTextTree(inputFile)
+
             output += output1
+
+            csvRows = self.ensureColumnsPopulated(csvRows)
+
             return (
                 csvRows,
                 colourColumn,
@@ -552,10 +571,10 @@ class CSVTree:
         Common method for establishing if a node matches some criterion, usually a regex
         """
         return (
-            re.search(criterion, self.data["shape"])
-            or re.search(criterion, self.data["colour"])
-            or re.search(criterion, self.data["note"])
-            or re.search(criterion, self.data["cell"])
+            (re.search(criterion, self.data["shape"]) != None)
+            | (re.search(criterion, self.data["colour"]) != None)
+            | (re.search(criterion, self.data["note"]) != None)
+            | (re.search(criterion, self.data["cell"]) != None)
         )
 
     def applyFilter(self, criterion, actionsList):
