@@ -583,8 +583,6 @@ class CSVTree:
         """
         propagate = True
         if self.data["level"] != -1:
-            cellColumn = int(self.data["level"]) + levelColumn + 1
-
             if self.isMatch(criterion):
                 # Matched so apply all actions triggered by this match
                 for action in actionsList:
@@ -736,9 +734,6 @@ class CSVTree:
             childNode.repairSubtreeLevels(parentLevel + 1)
 
     def exportToMarkdown(self, actionsList):
-        # Prime array of output lines
-        output = []
-
         # Get the number of heading levels to allow before going to nested bulleted lists
         headingLevels = int(actionsList[0])
 
@@ -959,10 +954,7 @@ class CSVTree:
             # Print this node
             colour = self.data["colour"]
             cell = self.data["cell"]
-
             note = self.data["note"]
-            shape = self.data["shape"]
-
             indent = "  " * (level + 1)
             if colour == "":
                 output.append(indent + "<node TEXT='" + cell + "'>")
@@ -1033,10 +1025,7 @@ class CSVTree:
             # Print this node
             colour = self.data["colour"]
             cell = self.data["cell"]
-
             note = self.data["note"]
-            shape = self.data["shape"]
-
             indent = "  " * (level + 2)
             if colour == "":
                 printLine = indent + "<outline text='" + cell + "'"
