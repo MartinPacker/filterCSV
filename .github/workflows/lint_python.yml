@@ -33,4 +33,4 @@ jobs:
           cat tests/mdTest3.csv   | ./filterCSV markdown '2 3'      # Test of Markdown export
           cat tests/mdTest3.csv   | ./filterCSV xml freemind        # Test of Freemind XML export
           cat tests/test1.csv     | ./filterCSV 'A2A|X' 'keep'      # Test of 'keep' - with two surviving trees
-          cat tests/promotion.csv | ./filterCSV promote 2           # Test of promote
+          # cat tests/promotion.csv | ./filterCSV promote 2           # Test of promote
