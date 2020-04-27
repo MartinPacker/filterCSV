@@ -1299,7 +1299,7 @@ if __name__ == "__main__":
 
     matchCriteria, actionsLists, output = ParameterParser().getParameters()
 
-    writeOutput(output)
+    print("\n".join(output))
 
     #  Convert stdin data into CSV array - in whatever form it was
     (
@@ -1312,7 +1312,7 @@ if __name__ == "__main__":
         output,
     ) = TreeReader().createCSVArray()
 
-    writeOutput(output)
+    print("\n".join(output))
 
     # Build the tree from the CSV array
     currentLevel = -1
