@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # To make it easy to import ../filterCSV even though it has no .py extension, we did:
-# ln -s ../filterCSV filterCSV.py  # make a symlink from ../filterCSV to ./filterCSV.py
+# ln -s ./filterCSV filterCSV.py  # make a symlink from ./filterCSV to ./filterCSV.py
 
 import os
 import string
