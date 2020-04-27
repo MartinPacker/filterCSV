@@ -1290,6 +1290,11 @@ def formatWhitespaceCharacters(whitespace):
     return "".join("<space>" if c == " " else "<tab>" for c in whitespace)
 
 
+def writeOutput(printLines):
+    for line in printLines:
+        print(line, file=sys.stderr)
+
+
 if __name__ == "__main__":
     iThoughtsColours = iThoughtsColours()
 

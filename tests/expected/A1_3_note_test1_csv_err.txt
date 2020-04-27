@@ -3,4 +3,4 @@ Criterion                                Actions
 ^A1$                                     3 note
 
 
-3 FFFFB2
+Input type detected as 'iThoughtsCSV'.

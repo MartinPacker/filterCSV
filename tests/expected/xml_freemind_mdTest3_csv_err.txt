@@ -3,4 +3,6 @@ Criterion                                Actions
 xml                                      freemind
 
 
+Input type detected as 'iThoughtsCSV'.
+
 Exported XML will have more than 1 root node. Some programs will get confused by this. Continuing.
