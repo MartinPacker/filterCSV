@@ -107,7 +107,7 @@ testdata = {
     "markdown 2_3": "tests/mdTest3.csv",
     "xml freemind": "tests/mdTest3.csv",
     "A2A|X keep": "tests/test1.csv",
-    "promote 2": "tests/promotion.csv",
+    # "promote 2": "tests/promotion.csv",
 }
 
 
