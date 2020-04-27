@@ -1292,7 +1292,7 @@ def formatWhitespaceCharacters(whitespace):
 
 def writeOutput(printLines):
     for line in printLines:
-        print(line)
+        print(line, file=sys.stderr)
 
 
 if __name__ == "__main__":
