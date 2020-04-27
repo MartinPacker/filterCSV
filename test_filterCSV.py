@@ -129,11 +129,11 @@ def test_file_processing(args, stdin_file):
     with open(f"{file_base}_err.txt") as in_file:
         expected_err = in_file.read().strip()
     for line in expected_err.splitlines():
-        assert line in cp.stderr, f"{line}\n***is not in***\n{cp.stderr}"
-    assert expected_err in cp.stderr, f"{expected_err}\n***is not in***\n{cp.stderr}"
+        assert line in cp.stderr, f"\n{line}\n***is not in***\n{cp.stderr}"
+    assert expected_err in cp.stderr, f"\n{expected_err}\n***is not in***\n{cp.stderr}"
 
     with open(f"{file_base}_out.txt") as in_file:
         expected_out = in_file.read().strip()
     for line in expected_out.splitlines():
-        assert line in cp.stdout, f"{line}\n***is not in***\n{cp.stdout}"
-    assert expected_out in cp.stdout, f"{expected_out}\n***is not in***\n{cp.stdout}"
+        assert line in cp.stdout, f"\n{line}\n***is not in***\n{cp.stdout}"
+    assert expected_out in cp.stdout, f"\n{expected_out}\n***is not in***\n{cp.stdout}"
