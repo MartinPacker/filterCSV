@@ -150,7 +150,7 @@ class TreeReader:
         colourColumn = self.findColumn(csvRows, "colour")
         levelColumn = self.findColumn(csvRows, "level")
         noteColumn = self.findColumn(csvRows, "note")
-        
+
         shapeColumn = self.findColumn(csvRows, "shape")
         positionColumn = self.findColumn(csvRows, "position")
 
@@ -163,14 +163,14 @@ class TreeReader:
             positionColumn,
         )
 
-    def ensureColumnsPopulated(self,csvRows):
+    def ensureColumnsPopulated(self, csvRows):
         # Ensures every column in the header row is present in each subsequent row
         minimumColumnCount = len(csvRows[0])
         for rowNumber, row in enumerate(csvRows):
             extraCells = minimumColumnCount - len(row)
             if extraCells > 0:
                 csvRows[rowNumber] += [""] * extraCells
-        
+
         return csvRows
 
     def readiThoughtsCSVTree(self, inputFile):
@@ -571,10 +571,10 @@ class CSVTree:
         Common method for establishing if a node matches some criterion, usually a regex
         """
         return (
-            (re.search(criterion, self.data["shape"]) != None)
-            | (re.search(criterion, self.data["colour"]) != None)
-            | (re.search(criterion, self.data["note"]) != None)
-            | (re.search(criterion, self.data["cell"]) != None)
+            (re.search(criterion, self.data["shape"]) is not None)
+            | (re.search(criterion, self.data["colour"]) is not None)
+            | (re.search(criterion, self.data["note"]) is not None)
+            | (re.search(criterion, self.data["cell"]) is not None)
         )
 
     def applyFilter(self, criterion, actionsList):
