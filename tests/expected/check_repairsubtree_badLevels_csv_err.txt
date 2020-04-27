@@ -3,6 +3,8 @@ Criterion                                Actions
 check                                    repairsubtree
 
 
+Input type detected as 'iThoughtsCSV'.
+
 Beginning Level Check
 ---------------------
 A                                        Error: Expected level 0. Found level 1. Repaired this node (setting its level to 0) and all its child nodes.
