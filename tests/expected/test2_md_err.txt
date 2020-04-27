@@ -2,4 +2,6 @@ Criterion                                Actions
 ---------                                -------
 
 
+Input type detected as 'markdown'.
+
 Indentation detected: <space><space>
