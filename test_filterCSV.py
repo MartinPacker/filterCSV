@@ -24,7 +24,7 @@ def dump_CSVTree(csv_tree: CSVTree) -> str:
     larry
     """
     fs = field_size = 10
-    fmt = " ".join(f"{key}[:{fs}]:<{fs}}" for key in csv_tree.data)
+    fmt = " ".join(f"{key}[:{fs}]:<{fs}" for key in csv_tree.data)
     print(fmt)
     print("  " * int(csv_tree.data["level"]) + fmt.format(**csv_tree.data))
     for child in csv_tree.getChildren():
