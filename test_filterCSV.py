@@ -44,22 +44,24 @@ def test_CSVTree_isMatch():
 
 def test_calculateMaximumLevel():
     csv_tree = filterCSV.CSVTree(*data_fields)
-    csv_tree.data["level"] = 1
+    csv_tree.data["level"] = "1"
     assert csv_tree.calculateMaximumLevel() == 1
-    csv_tree.data["level"] = 2
-    assert csv_tree.calculateMaximumLevel() == 2
+    csv_tree.data["level"] = "0"
+    assert csv_tree.calculateMaximumLevel() == 0
+    # make a child
     child = filterCSV.CSVTree(*["child"] * 6)
-    child.data["level"] = 4
+    child.data["level"] = "2"
     csv_tree.addChild(child)
-    assert csv_tree.calculateMaximumLevel() == 4
-    grandchild = filterCSV.CSVTree(*["grandchild"] * 6)
-    grandchild.data["level"] = 8
-    child.addChild(grandchild)
-    assert csv_tree.calculateMaximumLevel() == 8
-    assert child.calculateMaximumLevel() == 8
-    assert grandchild.calculateMaximumLevel() == 8
-    csv_tree.deleteChild(child)
     assert csv_tree.calculateMaximumLevel() == 2
+    # make a grandchild
+    grandchild = filterCSV.CSVTree(*["grandchild"] * 6)
+    grandchild.data["level"] = "4"
+    child.addChild(grandchild)
+    assert csv_tree.calculateMaximumLevel() == 4
+    assert child.calculateMaximumLevel() == 4
+    assert grandchild.calculateMaximumLevel() == 4
+    csv_tree.deleteChild(child)
+    assert csv_tree.calculateMaximumLevel() == 0
 
 
 def test_writeCSVTree():
