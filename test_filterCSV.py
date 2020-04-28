@@ -17,19 +17,21 @@ data_fields = ("shape", "colour", "note", "level", "position", "cell")
 def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     """
     >>> csv_tree = filterCSV.CSVTree(*data_fields)
+    >>> child.data["level"] = 0
     >>> dump_CSVTree(csv_tree)
-    shape      colour     note       level      position   cell
+    shape      colour     note       0          position   cell
     >>> child = filterCSV.CSVTree(*["child"] * 6)
     >>> child.data["level"] = 1
     >>> csv_tree.addChild(child)
     >>> dump_CSVTree(csv_tree)
-    shape      colour     note       level      position   cell
+    shape      colour     note       0          position   cell
       child      child      child      1          child      child
     """
-    s = "".join(f"{value[:10]:<11}" for value in csv_tree.data.values()).strip()
-    print("  " * int(csv_tree.data["level"]) + s)
+    s += "".join(f"{value[:10]:<11}" for value in csv_tree.data.values())
+    s = f"{'  ' * int(csv_tree.data["level"])}{s.strip()}" + "\n" 
     for child in csv_tree.getChildren():
-        dump_CSVTree(child)
+        s += dump_CSVTree(child)
+    return s
 
 
 def test_CSVTree():
