@@ -22,7 +22,7 @@ def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     'shape      colour     note       0          position   cell'
     >>> child = filterCSV.CSVTree(*["child"] * 6)
     >>> child.data["level"] = 1
-    >>> csv_tree.addChild(child)
+    >>> _ = csv_tree.addChild(child)
     >>> dump_CSVTree(csv_tree).rstrip()
     shape      colour     note       0          position   cell
       child      child      child      1          child      child
