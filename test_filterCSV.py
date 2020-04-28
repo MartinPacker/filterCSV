@@ -18,12 +18,12 @@ def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     """
     >>> csv_tree = filterCSV.CSVTree(*data_fields)
     >>> csv_tree.data["level"] = 0
-    >>> dump_CSVTree(csv_tree).rstrip()
-    'shape      colour     note       0          position   cell'
+    >>> print(dump_CSVTree(csv_tree).rstrip())
+    shape      colour     note       0          position   cell
     >>> child = filterCSV.CSVTree(*["child"] * 6)
     >>> child.data["level"] = 1
     >>> _ = csv_tree.addChild(child)
-    >>> dump_CSVTree(csv_tree).rstrip()
+    >>> print(dump_CSVTree(csv_tree).rstrip())
     shape      colour     note       0          position   cell
       child      child      child      1          child      child
     """
