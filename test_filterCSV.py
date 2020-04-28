@@ -11,19 +11,20 @@ import pytest
 
 from . import filterCSV
 
-data_fields = ("shape", "colour", "note", "0", "position", "cell")
+data_fields = ("shape", "colour", "note", "level", "position", "cell")
 
 
 def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     """
     >>> csv_tree = filterCSV.CSVTree(*data_fields)
     >>> dump_CSVTree(csv_tree)
-    bob
+    shape      colour     note       level      position   cell
     >>> child = filterCSV.CSVTree(*["child"] * 6)
     >>> child.data["level"] = 1
     >>> csv_tree.addChild(child)
     >>> dump_CSVTree(csv_tree)
-    larry
+    shape      colour     note       level      position   cell
+      child      child      child      1          child      child
     """
     s = "".join(f"{value[:10]:<11}" for value in csv_tree.data.values()).strip()
     print("  " * int(csv_tree.data["level"]) + s)
