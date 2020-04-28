@@ -17,7 +17,7 @@ data_fields = ("shape", "colour", "note", "level", "position", "cell")
 def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     """
     >>> csv_tree = filterCSV.CSVTree(*data_fields)
-    >>> child.data["level"] = 0
+    >>> csv_tree.data["level"] = 0
     >>> dump_CSVTree(csv_tree)
     shape      colour     note       0          position   cell
     >>> child = filterCSV.CSVTree(*["child"] * 6)
