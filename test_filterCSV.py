@@ -11,7 +11,7 @@ import pytest
 
 from . import filterCSV
 
-data_fields = ("shape", "colour", "note", "level", "position", "cell")
+data_fields = ("shape", "colour", "note", "0", "position", "cell")
 
 
 def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
@@ -20,7 +20,9 @@ def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     >>> dump_CSVTree(csv_tree)
     bob
     >>> child = filterCSV.CSVTree(*["child"] * 6)
+    >>> child.data["level"] = 1
     >>> csv_tree.addChild(child)
+    >>> dump_CSVTree(csv_tree)
     larry
     """
     fmt = " ".join(f"{key}[:{10}]:<{10}" for key in csv_tree.data)
