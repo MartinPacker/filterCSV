@@ -26,6 +26,11 @@ def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
     >>> print(dump_CSVTree(csv_tree).rstrip())
     shape      colour     note       0          position   cell
       child      child      child      1          child      child
+    >>> child.addChild(filterCSV.CSVTree(*["grandchild"] * 6)).data["level"] = 3
+    >>> print(dump_CSVTree(csv_tree).rstrip())
+    shape      colour     note       0          position   cell
+      child      child      child      1          child      child
+          grandchild grandchild grandchild 2          grandchild grandchild
     """
     s = "".join(f"{str(value)[:10]:<11}" for value in csv_tree.data.values())
     s = f"{'  ' * int(csv_tree.data['level'])}{s.strip()}" + "\n"
