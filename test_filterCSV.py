@@ -14,6 +14,22 @@ from . import filterCSV
 data_fields = ("shape", "colour", "note", "level", "position", "cell")
 
 
+def dump_CSVTree(csv_tree: CSVTree) -> str:
+    """
+    >>> csv_tree = filterCSV.CSVTree(*data_fields)
+    >>> dump_CSVTree(csv_tree)
+    bob
+    >>> child = filterCSV.CSVTree(*["child"] * 6)
+    >>> csv_tree.addChild(child)
+    larry
+    """
+    fs = field_size = 10
+    fmt = " ".join(f"{key}[:{fs}]:<{fs}}" for key in csv_tree.data)
+    print(fmt)
+    print("  " * int(csv_tree.data["level"]) + fmt.format(**csv_tree.data))
+    for child in csv_tree.getChildren():
+        
+    
 def test_CSVTree():
     csv_tree = filterCSV.CSVTree(*data_fields)
     assert csv_tree.childNodes == []
@@ -141,3 +157,10 @@ def test_file_processing(args, stdin_file):
     with open(f"{file_base}_out.txt") as in_file:
         expected_out = in_file.read().strip()
     assert expected_out in cp.stdout, f"{expected_out}\n***is not in***\n{cp.stdout}"
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
+
