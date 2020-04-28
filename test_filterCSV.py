@@ -28,7 +28,7 @@ def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
       child      child      child      1          child      child
     """
     s += "".join(f"{value[:10]:<11}" for value in csv_tree.data.values())
-    s = f"{'  ' * int(csv_tree.data["level"])}{s.strip()}" + "\n" 
+    s = f"{'  ' * int(csv_tree.data['level'])}{s.strip()}" + "\n" 
     for child in csv_tree.getChildren():
         s += dump_CSVTree(child)
     return s
