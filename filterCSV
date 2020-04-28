@@ -300,30 +300,30 @@ class TreeReader:
 
         # Prepare the input text for namespace parsing and XML parsing
         XMLText = "\n".join(inputFile)
-        
+
         # Create the XML parse tree
         self.XMLTree = ElementTree.fromstring(XMLText)
-        
+
         # Hunt for the default namespace
-        split1 = XMLText.split("xmlns=\"")
+        split1 = XMLText.split('xmlns="')
         if len(split1) == 1:
             output.append("No default namespace specification.")
             self.defaultXMLNamespace = ""
         else:
-            self.defaultXMLNamespace = split1[1].split("\"")[0]
+            self.defaultXMLNamespace = split1[1].split('"')[0]
             output.append(f"Default namespace is '{self.defaultXMLNamespace}'")
-            
+
         # Hunt for other namespaces
         self.XMLNamespaces = {}
         split3 = XMLText.split("xmlns:")
         for fragment in range(len(split3)):
             if fragment > 0:
-                split4 = split3[fragment].split("=\"")
+                split4 = split3[fragment].split('="')
                 key = split4[0]
-                split5 = split4[1].split("\"")
+                split5 = split4[1].split('"')
                 value = split5[0]
-                self.XMLNamespaces[key] = value        
-        
+                self.XMLNamespaces[key] = value
+
         # Build array of rows
         csvRows = []
 
@@ -357,66 +357,106 @@ class TreeReader:
                 "level20",
             ],
         )
-        
-        csvRows += self._readXMLTree(self.XMLTree,0)
-        
+
+        csvRows += self._readXMLTree(self.XMLTree, 0)
+
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
-    def resolveNamespaces(self,textToEdit):
-        editedText = textToEdit.replace("{" + self.defaultXMLNamespace + "}","")
+    def resolveNamespaces(self, textToEdit):
+        editedText = textToEdit.replace("{" + self.defaultXMLNamespace + "}", "")
         for key in self.XMLNamespaces:
-            editedText=editedText.replace("{" + self.XMLNamespaces[key] + "}", key + ":")
+            editedText = editedText.replace(
+                "{" + self.XMLNamespaces[key] + "}", key + ":"
+            )
         return editedText
 
-    def _readXMLTree(self,XMLNode,level):
+    def _readXMLTree(self, XMLNode, level):
         csvRows = []
 
         # Edit the element tag - in case of namespaces
         editedElementName = self.resolveNamespaces(XMLNode.tag)
-        
+
         # Create beginning of the row for the node itself - without attributes
-        
+
         if XMLNode is self.XMLTree:
             # Is root node so create legend rows before it
-            csvRows.append(["{-300,-120}", iThoughtsColours.getColour(2),"rectangle","0","element"])
-            csvRows.append(["{-300,-85}", iThoughtsColours.getColour(8),"rectangle","0","value"])
-            csvRows.append(["{-300,-50}", iThoughtsColours.getColour(6),"rectangle","0","attribute"])
-                
+            csvRows.append(
+                [
+                    "{-300,-120}",
+                    iThoughtsColours.getColour(2),
+                    "rectangle",
+                    "0",
+                    "element",
+                ]
+            )
+            csvRows.append(
+                ["{-300,-85}", iThoughtsColours.getColour(8), "rectangle", "0", "value"]
+            )
+            csvRows.append(
+                [
+                    "{-300,-50}",
+                    iThoughtsColours.getColour(6),
+                    "rectangle",
+                    "0",
+                    "attribute",
+                ]
+            )
+
             # Set position of root node to {0,0}
-            elementCSVRow = ["{0,0}",iThoughtsColours.getColour(2),"rounded",f"{str(level)}"]
+            elementCSVRow = [
+                "{0,0}",
+                iThoughtsColours.getColour(2),
+                "rounded",
+                f"{str(level)}",
+            ]
         else:
             # Set position to blank for all but the root node
-            elementCSVRow = ["",iThoughtsColours.getColour(2),"rounded",f"{str(level)}"]
-                        
+            elementCSVRow = [
+                "",
+                iThoughtsColours.getColour(2),
+                "rounded",
+                f"{str(level)}",
+            ]
+
         # Add blank cells to position the cell with the element in
         if level > 0:
             levelBlankCells = [""] * level
             elementCSVRow += levelBlankCells
-        
+
         # Add the (edited) element name
         elementCSVRow.append(editedElementName)
-        
+
         # Add the row to the list of rows
         csvRows.append(elementCSVRow)
-        
-        for key,value in XMLNode.attrib.items():
-            attributeCSVRow = ["", iThoughtsColours.getColour(6),"rounded",f"{str(level + 1)}"]
+
+        for key, value in XMLNode.attrib.items():
+            attributeCSVRow = [
+                "",
+                iThoughtsColours.getColour(6),
+                "rounded",
+                f"{str(level + 1)}",
+            ]
             levelBlankCells = [""] * (level + 1)
             attributeCSVRow += levelBlankCells
-            
+
             editedAttributeName = self.resolveNamespaces(key)
-            attributeCSVRow += [f"{editedAttributeName}=\"{value}\""]
+            attributeCSVRow += [f'{editedAttributeName}="{value}"']
             csvRows.append(attributeCSVRow)
         if XMLNode.text is not None:
             if XMLNode.text.lstrip().rstrip() != "":
-                textCSVRow = ["", iThoughtsColours.getColour(8),"rounded",f"{str(level + 1)}"]
+                textCSVRow = [
+                    "",
+                    iThoughtsColours.getColour(8),
+                    "rounded",
+                    f"{str(level + 1)}",
+                ]
                 levelBlankCells = [""] * (level + 1)
                 textCSVRow += levelBlankCells
                 textCSVRow += [f"{XMLNode.text}"]
                 csvRows.append(textCSVRow)
-        
+
         for child in XMLNode:
-            csvRows += self._readXMLTree(child, level+1)
+            csvRows += self._readXMLTree(child, level + 1)
 
         return csvRows
 
@@ -495,13 +535,12 @@ class TreeReader:
             output += output1
 
             csvRows = self.ensureColumnsPopulated(csvRows)
-            if len(self.XMLNamespaces) > 0:            
+            if len(self.XMLNamespaces) > 0:
                 output.append("Namespace".ljust(20, " ") + " Namespace URL")
                 output.append("---------".ljust(20, " ") + " -------------")
                 for key in self.XMLNamespaces:
                     output.append(key.ljust(20, " ") + " " + self.XMLNamespaces[key])
                 output.append("")
-
 
             return (
                 csvRows,
