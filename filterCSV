@@ -28,6 +28,7 @@ import re
 import sys
 from collections import Counter
 from string import hexdigits
+import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
@@ -294,6 +295,44 @@ class TreeReader:
 
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
+    def readXMLTree(self, inputFile):
+        output = []
+
+        XMLtree = ElementTree.fromstring("\n".join(inputFile))
+        
+        # Build array of rows
+        csvRows = []
+
+        # Insert a header row, with attribute columns and a level0 column plus other levels
+        csvRows.append(
+            [
+                "level",
+                "level0",
+                "level1",
+                "level2",
+                "level3",
+                "level4",
+                "level5",
+                "level6",
+                "level7",
+                "level8",
+                "level9",
+                "level10",
+                "level11",
+                "level12",
+                "level13",
+                "level14",
+                "level15",
+                "level16",
+                "level17",
+                "level18",
+                "level19",
+                "level20",
+            ],
+        )
+        
+        return self.ensureMandatoryColumns(csvRows) + (output,)
+
     def createCSVArray(self):
         output = []
 
@@ -341,6 +380,30 @@ class TreeReader:
                 positionColumn,
                 output1,
             ) = self.readMarkdownOrTextTree(inputFile)
+
+            output += output1
+
+            csvRows = self.ensureColumnsPopulated(csvRows)
+
+            return (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output,
+            )
+        elif inputType == "XML":
+            (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output1,
+            ) = self.readXMLTree(inputFile)
 
             output += output1
 
