@@ -28,8 +28,9 @@ def dump_CSVTree(csv_tree: CSVTree) -> str:
     print(fmt)
     print("  " * int(csv_tree.data["level"]) + fmt.format(**csv_tree.data))
     for child in csv_tree.getChildren():
-        
-    
+        dump_CSVTree(child)
+
+
 def test_CSVTree():
     csv_tree = filterCSV.CSVTree(*data_fields)
     assert csv_tree.childNodes == []
@@ -163,4 +164,3 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
-
