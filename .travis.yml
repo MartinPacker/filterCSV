@@ -14,7 +14,7 @@ jobs:
     # - script: cat tests/promotion.csv | ./filterCSV promote 2           # Test of promote
     - script: pydoc ./filterCSV.py
 before_script:
-  - flake8 --ignore=E501,F841,W503 --max-complexity=76 --max-line-length=88 --show-source --statistics .
+  - flake8 . --max-complexity=76 --max-line-length=88 --show-source --statistics
   - # ln -s filterCSV filterCSV.py
   - ls -la ; ls -la tests
   - pytest --doctest-modules

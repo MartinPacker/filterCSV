@@ -12,7 +12,8 @@ Commentary to stderr
 
 Command line parameters are pairs of:
 
-1) A specifier. This is a regular expression to match. (A special value 'all' matches any value)
+1) A specifier. This is a regular expression to match. (A special value 'all' matches
+    any value)
 2) An action or sequence of actions.
 
 Actions can be:
@@ -63,7 +64,8 @@ class ParameterParser:
             actionsString = sys.argv[parmNumber].lower()
             actionList = actionsString.split()
 
-            # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as the colour number or shape
+            # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as
+            # the colour number or shape
             for actionNumber in range(len(actionList)):
                 action = actionList[actionNumber]
                 if action in ("nextcolour", "nextcolor", "nc"):
@@ -207,7 +209,8 @@ class TreeReader:
 
                 break
 
-        # Insert a header row, with attribute columns and a level0 column plus other levels
+        # Insert a header row, with attribute columns and a level0 column plus other
+        # levels
         csvRows.append(
             [
                 "level",
@@ -235,8 +238,8 @@ class TreeReader:
             ],
         )
 
-        # Add a level column if one is not already present, and move the text into the right
-        # level - for each data line
+        # Add a level column if one is not already present, and move the text into the
+        # right level - for each data line
         for lineNumber, line in enumerate(inputFile):
             # A data line so work out how many levels deep it is indented
             lineIndent = len(line) - len(line.lstrip())
@@ -734,7 +737,8 @@ class CSVTree:
             childNode.repairSubtreeLevels(parentLevel + 1)
 
     def exportToMarkdown(self, actionsList):
-        # Get the number of heading levels to allow before going to nested bulleted lists
+        # Get the number of heading levels to allow before going to nested bulleted
+        # lists
         headingLevels = int(actionsList[0])
 
         if len(actionsList) > 1:
@@ -779,7 +783,8 @@ class CSVTree:
 
     def calculateMaximumLevel(self, level=0):
         """
-        maximum level is the max of this level and the levels of all childNodes, recursively through their descendents
+        maximum level is the max of this level and the levels of all childNodes,
+        recursively through their descendents
         """
         thisLevel = int(self.data["level"])
         if thisLevel > level:
@@ -838,7 +843,8 @@ class CSVTree:
 
             # Print the cell itself, including styling
             output.append(
-                "<td style='border: 1px solid black;border-radius: 5px;background-color: #"
+                "<td style='border: 1px solid black;border-radius: 5px;"
+                + "background-color: #"
                 + colour
                 + ";'>"
                 + self.data["cell"]
@@ -882,7 +888,8 @@ class CSVTree:
             # print list item
             output.append(
                 indent
-                + "<li style='padding: 10px;'><span style='border: 1px solid black;padding: 5px;border-radius: 5px;background-color: #"
+                + "<li style='padding: 10px;'><span style='border: 1px solid "
+                + "black;padding: 5px;border-radius: 5px;background-color: #"
                 + colour
                 + ";'>"
                 + self.data["cell"]
@@ -929,7 +936,8 @@ class CSVTree:
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
             sys.stderr.write(
-                "Exported XML will have more than 1 root node. Some programs will get confused by this. Continuing.\n"
+                "Exported XML will have more than 1 root node. Some programs will get "
+                "confused by this. Continuing.\n"
             )
 
         # Start the map
@@ -996,7 +1004,8 @@ class CSVTree:
         # Warn if resulting XML would produce more than 1 Level 0 node
         if len(self.childNodes) > 1:
             sys.stderr.write(
-                "Exported XML will have more than 1 root node. Some programs will get confused by this. Continuing.\n"
+                "Exported XML will have more than 1 root node. Some programs will get "
+                "confused by this. Continuing.\n"
             )
 
         # Start the map
@@ -1056,7 +1065,8 @@ class CSVTree:
         # Reset all nodes' matched flags
         self._markUnmatched()
 
-        # Apply tests to each node and mark it and all its children and ancestors matched
+        # Apply tests to each node and mark it and all its children and ancestors
+        # matched
         self._processKeep(matchCriterion)
 
         # Delete any unmatched nodes
