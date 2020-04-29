@@ -113,8 +113,7 @@ class TreeReader:
         else:
             return "text"
 
-    @staticmethod
-    def injectColumn(CSVArray, columnName):
+    def injectColumn(this, CSVArray, columnName):
         # Injects the named column at the beginning of each line,
         # with the heading given by columnName
         for rowNumber, _ in enumerate(CSVArray):
