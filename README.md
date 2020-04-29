@@ -147,11 +147,12 @@ Here is an example - produced by specifying `stats text`:
 
 ### Input Files
 
-Input files can be in one of three formats:
+Input files can be in one of four formats:
 
 * A CSV file that is already in a format supported by iThoughts' Import function.
 * A flat file where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at.
 * A Markdown nested list where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at. Only an asterisk (`*`) followed by a space is supported as a list item marker.
+* An XML file, including one with namespaces (both default and named).
 
 #### Nesting Level Detection
 
@@ -163,6 +164,10 @@ For example, if the second line starts with two spaces this is taken to indicate
 * Two spaces denotes a level 1 node
 * Four spaces denotes a level 2 node
 * And so on
+
+For an XML input file the nesting level is in the data stream; Elements' children are at a deeper nesting level. \
+On import child nodes are created for the element's value (if it has one) and any attributes. \
+These are colour coded and free-standing nodes marked "Element", "Value", and "Attribute" are added as a legend.
 
 #### Checking
 
