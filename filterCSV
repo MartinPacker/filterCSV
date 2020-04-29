@@ -1506,7 +1506,7 @@ class CSVTree:
         square         0        Foo
         """
         s = "".join(f"{str(value)[:10]:<11}" for value in self.data.values())
-        s = f"{'  ' * int(self.data['level'])}{s.strip()}" + "\n"
+        s = f"{'  ' * int(self.data['level'])}{s.rstrip()}" + "\n"
         return s + "".join(child.dump(actionsList) for child in self.getChildren())
 
 
