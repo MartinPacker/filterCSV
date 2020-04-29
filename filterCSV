@@ -113,7 +113,8 @@ class TreeReader:
         else:
             return "text"
 
-    def injectColumn(this, CSVArray, columnName):
+    @staticmethod
+    def injectColumn(CSVArray, columnName):
         # Injects the named column at the beginning of each line,
         # with the heading given by columnName
         for rowNumber, _ in enumerate(CSVArray):
@@ -134,11 +135,11 @@ class TreeReader:
         # Return the rows and the position of each column
         return (
             csvRows,
-            csvRows.index("colour"),
-            csvRows.index("level"),
-            csvRows.index("note"),
-            csvRows.index("shape"),
-            csvRows.index("position"),
+            csvRows[0].index("colour"),
+            csvRows[0].index("level"),
+            csvRows[0].index("note"),
+            csvRows[0].index("shape"),
+            csvRows[0].index("position"),
         )
 
     def ensureColumnsPopulated(self, csvRows):
