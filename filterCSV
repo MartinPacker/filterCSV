@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.2"
-filterCSV_date = "28 April, 2020"
+filterCSV_date = "29 April, 2020"
 
 
 class ParameterParser:
@@ -1496,11 +1496,12 @@ class CSVTree:
                 + "}"
             )
 
-    def dump(self) -> str:
+    def dump(self,actionsList) -> str:
         """
         >>> data_fields = ("shape", "colour", "note", "level", "position", "cell")
         >>> csv_tree = CSVTree(*data_fields)
         >>> csv_tree.data["level"] = 0
+        >>> csv_tree.data["shape"] = "square"
         >>> print(csv_tree.dump().rstrip())
         shape      colour     note       0          position   cell
         >>> child = CSVTree(*["child"] * 6)
@@ -1517,7 +1518,7 @@ class CSVTree:
         """
         s = "".join(f"{str(value)[:10]:<11}" for value in self.data.values())
         s = f"{'  ' * int(self.data['level'])}{s.strip()}" + "\n"
-        return s + "".join(child.dump() for child in self.getChildren())
+        return s + "".join(child.dump(actionsList) for child in self.getChildren())
 
 
 def formatWhitespaceCharacters(whitespace):
@@ -1605,7 +1606,9 @@ if __name__ == "__main__":
     # contains parameters for that command. e.g. "markdown"
     for parmPair, matchCriterion in enumerate(matchCriteria):
         actionsList = actionsLists[parmPair]
-        if actionsList[0] == "keep":
+        if matchCriterion.pattern.lower() == "dump":
+            sys.stderr.write(csvTree.dump(actionsList))
+        elif actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
         else:
             func = {
