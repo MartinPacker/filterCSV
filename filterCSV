@@ -1499,6 +1499,7 @@ class CSVTree:
     def dump(self, actionsList=None) -> str:
         """
         >>> data_fields = ("square", "", "", "0", "", "Foo")
+        >>> csv_tree = CSVTree(*data_fields)
         >>> print(csv_tree.dump([]).rstrip())
         square         0        Foo
         """
