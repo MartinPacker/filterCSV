@@ -1496,7 +1496,6 @@ class CSVTree:
                 + "}"
             )
 
-
     def dump(self) -> str:
         """
         >>> data_fields = ("shape", "colour", "note", "level", "position", "cell")
