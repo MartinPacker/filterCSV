@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # To make it easy to import ../filterCSV even though it has no .py extension, we did:
-# ln -s ../filterCSV filterCSV.py  # make a symlink from ../filterCSV to ./filterCSV.py
+# ln -s ./filterCSV filterCSV.py  # make a symlink from ./filterCSV to ./filterCSV.py
 
 import os
 import string
@@ -12,6 +12,31 @@ import pytest
 from . import filterCSV
 
 data_fields = ("shape", "colour", "note", "level", "position", "cell")
+
+
+def dump_CSVTree(csv_tree: filterCSV.CSVTree) -> str:
+    """
+    >>> csv_tree = filterCSV.CSVTree(*data_fields)
+    >>> csv_tree.data["level"] = 0
+    >>> print(dump_CSVTree(csv_tree).rstrip())
+    shape      colour     note       0          position   cell
+    >>> child = filterCSV.CSVTree(*["child"] * 6)
+    >>> child.data["level"] = 1
+    >>> _ = csv_tree.addChild(child)
+    >>> print(dump_CSVTree(csv_tree).rstrip())
+    shape      colour     note       0          position   cell
+      child      child      child      1          child      child
+    >>> child.addChild(filterCSV.CSVTree(*["grandchild"] * 6)).data["level"] = 3
+    >>> print(dump_CSVTree(csv_tree).rstrip())
+    shape      colour     note       0          position   cell
+      child      child      child      1          child      child
+          grandchild grandchild grandchild 3          grandchild grandchild
+    """
+    s = "".join(f"{str(value)[:10]:<11}" for value in csv_tree.data.values())
+    s = f"{'  ' * int(csv_tree.data['level'])}{s.strip()}" + "\n"
+    for child in csv_tree.getChildren():
+        s += dump_CSVTree(child)
+    return s
 
 
 def test_CSVTree():
@@ -44,16 +69,26 @@ def test_CSVTree_isMatch():
 
 def test_calculateMaximumLevel():
     csv_tree = filterCSV.CSVTree(*data_fields)
-    csv_tree.data["level"] = 1
+    csv_tree.data["level"] = 1  # test as int
     assert csv_tree.calculateMaximumLevel() == 1
-    csv_tree.data["level"] = 2
-    assert csv_tree.calculateMaximumLevel() == 2
+    csv_tree.data["level"] = "0"  # test as str
+    assert csv_tree.calculateMaximumLevel() == 0
+    # make a child
     child = filterCSV.CSVTree(*["child"] * 6)
-    child.data["level"] = 4
+    child.data["level"] = "2"
     csv_tree.addChild(child)
-    assert csv_tree.calculateMaximumLevel() == 4
-    csv_tree.deleteChild(child)
     assert csv_tree.calculateMaximumLevel() == 2
+    # make a grandchild
+    grandchild = filterCSV.CSVTree(*["grandchild"] * 6)
+    grandchild.data["level"] = "4"  # test as str
+    child.addChild(grandchild)
+    assert csv_tree.calculateMaximumLevel() == 4
+    assert child.calculateMaximumLevel() == 4
+    assert grandchild.calculateMaximumLevel() == 4
+    grandchild.data["level"] = 5  # test as int
+    assert csv_tree.calculateMaximumLevel() == 5
+    csv_tree.deleteChild(child)
+    assert csv_tree.calculateMaximumLevel() == 0
 
 
 def test_writeCSVTree():
@@ -137,3 +172,9 @@ def test_file_processing(args, stdin_file):
     for line in expected_out.splitlines():
         assert line in cp.stdout, f"\n{line}\n***is not in***\n{cp.stdout}"
     assert expected_out in cp.stdout, f"{expected_out}\n***is not in***\n{cp.stdout}"
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
