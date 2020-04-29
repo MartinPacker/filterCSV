@@ -46,8 +46,8 @@ class ParameterParser:
 
         # Heading for parameters display
         output.append("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n")
-        output.append("Criterion".ljust(40, " ") + " Actions")
-        output.append("---------".ljust(40, " ") + " -------")
+        output.append(f"{Criterion:<40} Actions")
+        output.append(f"{---------:<40} -------")
 
         # Read in pairs of parameters from command line
         parmNumber = 1
