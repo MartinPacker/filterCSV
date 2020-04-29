@@ -1496,7 +1496,7 @@ class CSVTree:
                 + "}"
             )
 
-    def dump(self,actionsList) -> str:
+    def dump(self, actionsList) -> str:
         """
         >>> data_fields = ("shape", "colour", "note", "level", "position", "cell")
         >>> csv_tree = CSVTree(*data_fields)
