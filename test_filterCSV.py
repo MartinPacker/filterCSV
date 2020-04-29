@@ -42,6 +42,28 @@ def test_CSVTree_isMatch():
         assert not csv_tree.isMatch(criterion), criterion
 
 
+expected = (
+    "shape      colour     note       0          position   cell",
+    "  child      child      child      1          child      child",
+    "      grandchild grandchild grandchild 3          grandchild grandchild",
+)
+
+
+def test_CSVTree_dump():
+    csv_tree = filterCSV.CSVTree(*data_fields)
+    csv_tree.data["level"] = 0
+    actual = csv_tree.dump()
+    assert expected[0] in actual, (expected[0] in actual)
+    child = filterCSV.CSVTree(*["child"] * 6)
+    child.data["level"] = 1
+    csv_tree.addChild(child)
+    actual = csv_tree.dump()
+    assert "\n".join(expected[0:1]) in actual, ("\n".join(expected[0:1]) in actual)
+    child.addChild(filterCSV.CSVTree(*["grandchild"] * 6)).data["level"] = 3
+    actual = csv_tree.dump()
+    assert "\n".join(expected) in actual, ("\n".join(expected) in actual)
+
+
 def test_calculateMaximumLevel():
     csv_tree = filterCSV.CSVTree(*data_fields)
     csv_tree.data["level"] = 1  # test as int

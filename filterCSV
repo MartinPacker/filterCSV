@@ -1498,10 +1498,12 @@ class CSVTree:
 
     def dump(self, actionsList=None) -> str:
         """
-        >>> data_fields = ("square", "", "", "0", "", "Foo")
-        >>> csv_tree = CSVTree(*data_fields)
+        >>> csv_tree = CSVTree("", "", "", "-1", "", "")
+        >>> csv_child = CSVTree("square", "", "", "0", "", "Foo")
+        >>> _ = csv_tree.addChild(csv_child)
         >>> print(csv_tree.dump([]).rstrip())
-        square         0        Foo
+                                         -1
+        square                           0                     Foo
         """
         s = "".join(f"{str(value)[:10]:<11}" for value in self.data.values())
         s = f"{'  ' * int(self.data['level'])}{s.rstrip()}" + "\n"
