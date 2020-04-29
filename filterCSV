@@ -1499,7 +1499,7 @@ class CSVTree:
     def dump(self, actionsList=None) -> str:
         """
         >>> csv_tree = CSVTree("", "", "", "-1", "", "")
-        >>> csv_child = CSVTree("square", "", "", "0"", "", "Foo")
+        >>> csv_child = CSVTree("square", "", "", "0", "", "Foo")
         >>> csv_tree.addChild(csv_child)
         >>> print(csv_tree.dump([]).rstrip())
         -1
