@@ -1496,26 +1496,11 @@ class CSVTree:
                 + "}"
             )
 
-    def dump(self, actionsList) -> str:
+    def dump(self, actionsList = None) -> str:
         """
-        >>> data_fields = ("shape", "colour", "note", "level", "position", "cell")
-        >>> csv_tree = CSVTree(*data_fields)
-        >>> csv_tree.data["level"] = 0
-        >>> csv_tree.data["level0"] = "Foo"
-        >>> csv_tree.data["shape"] = "square"
+        >>> data_fields = ("square", "", "", "0"", "", "Foo")
         >>> print(csv_tree.dump([]).rstrip())
-        shape      colour     note       0          position   cell
-        >>> child = CSVTree(*["child"] * 6)
-        >>> child.data["level"] = 1
-        >>> _ = csv_tree.addChild(child)
-        >>> print(csv_tree.dump([]).rstrip())
-        shape      colour     note       0          position   cell
-          child      child      child      1          child      child
-        >>> child.addChild(CSVTree(*["grandchild"] * 6)).data["level"] = 3
-        >>> print(csv_tree.dump([]).rstrip())
-        shape      colour     note       0          position   cell
-          child      child      child      1          child      child
-              grandchild grandchild grandchild 3          grandchild grandchild
+        square         0        Foo
         """
         s = "".join(f"{str(value)[:10]:<11}" for value in self.data.values())
         s = f"{'  ' * int(self.data['level'])}{s.strip()}" + "\n"
