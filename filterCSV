@@ -330,7 +330,8 @@ class TreeReader:
         # Build array of rows
         csvRows = []
 
-        # Insert a header row, with attribute columns and a level0 column plus other levels
+        # Insert a header row, with attribute columns and a level0 column plus other
+        # levels
         csvRows.append(
             [
                 "position",
