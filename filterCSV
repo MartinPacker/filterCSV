@@ -113,15 +113,8 @@ class TreeReader:
         else:
             return "text"
 
-    def findColumn(this, CSVArray, columnName):
-        # Returns 0-indexed column if the column name appears in the first LineEnd
-        # else -1
-        if columnName in CSVArray[0]:
-            return CSVArray[0].index(columnName)
-        else:
-            return -1
-
-    def injectColumn(this, CSVArray, columnName):
+    @staticmethon
+    def injectColumn(CSVArray, columnName):
         # Injects the named column at the beginning of each line,
         # with the heading given by columnName
         for rowNumber, _ in enumerate(CSVArray):
@@ -129,41 +122,24 @@ class TreeReader:
                 CSVArray[0].insert(0, columnName)
             else:
                 CSVArray[rowNumber].insert(0, "")
-
         return CSVArray
 
     def ensureMandatoryColumns(self, csvRows):
-        # Add a shape column if one is not already present
-        if self.findColumn(csvRows, "shape") == -1:
-            csvRows = self.injectColumn(csvRows, "shape")
+        """
+        Add columns if they are not already present
+        """
+        for column in "shape position note colour".split():
+            if column not in csvRows[0]:
+                csvRows = self.injectColumn(csvRows, column)
 
-        # Add a position column if one is not already present
-        if self.findColumn(csvRows, "position") == -1:
-            csvRows = self.injectColumn(csvRows, "position")
-
-        # Add a note column if one is not already present
-        if self.findColumn(csvRows, "note") == -1:
-            csvRows = self.injectColumn(csvRows, "note")
-
-        # Add a colour column if one is not already present
-        if self.findColumn(csvRows, "colour") == -1:
-            csvRows = self.injectColumn(csvRows, "colour")
-
-        # Establish the position of each column - to return
-        colourColumn = self.findColumn(csvRows, "colour")
-        levelColumn = self.findColumn(csvRows, "level")
-        noteColumn = self.findColumn(csvRows, "note")
-
-        shapeColumn = self.findColumn(csvRows, "shape")
-        positionColumn = self.findColumn(csvRows, "position")
-
+        # Return the rows and the position of each column
         return (
             csvRows,
-            colourColumn,
-            levelColumn,
-            noteColumn,
-            shapeColumn,
-            positionColumn,
+            csvRows.index("colour"),
+            csvRows.index("level"),
+            csvRows.index("note"),
+            csvRows.index("shape"),
+            csvRows.index("position"),
         )
 
     def ensureColumnsPopulated(self, csvRows):
@@ -178,12 +154,8 @@ class TreeReader:
 
     def readiThoughtsCSVTree(self, inputFile):
         output = []
-        # Build array of rows
-        csvRows = []
-        reader = csv.reader(inputFile)
-        for row in reader:
-            csvRows.append(row)
-
+        # Build a list of rows
+        csvRows = [row for row in csv.reader(inputFile)]
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
     def readMarkdownOrTextTree(self, inputFile):
