@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.2"
-filterCSV_date = "29 April, 2020"
+filterCSV_level = "1.3"
+filterCSV_date = "9 May, 2020"
 
 
 class ParameterParser:
@@ -531,11 +531,13 @@ class TreeReader:
 
 class TreeWriter:
     def writeTreeAsCSV(self):
-
+        # Write the tree out as a CSV file in iThoughts format
         CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
 
         # Write the header row
         headerRow = ["colour", "note", "position", "shape", "level"]
+
+        # Establish how many levels to put out in the heading
         levels = csvTree.calculateMaximumLevel() + 1
 
         for level in range(levels):
@@ -715,6 +717,7 @@ class CSVTree:
         >>> csv_tree.data["shape"]
         'shape'
         """
+        self.toBeDeleted = False
         self.childNodes = []
         self.data = {
             "shape": shape,
@@ -734,9 +737,39 @@ class CSVTree:
 
     def deleteChild(self, childNode):
         self.childNodes.remove(childNode)
+    
+    def cleanUpDeleted(self):
+        # Actually remove nodes marked for deletion
+        # Propagate to children in reverse order - for tree traversal to work
+        for c in range(len(self.childNodes) - 1, -1, -1):
+            self.childNodes[c].cleanUpDeleted()
+        
+        # Now remove this node - if to be deleted
+        if self.toBeDeleted:
+            self.parent.deleteChild(self)
 
     def getChildren(self):
         return self.childNodes
+
+    def replaceChild(self, childNode,replacementChildren):
+        # Remove the child node having replaced it with the replacement
+        # children, which are a list. (List could contain 1 item, of course.)
+        if childNode in self.childNodes:
+            # Child node is indeed a child so find its index
+            childIndex = self.childNodes.index(childNode)
+            
+            # Insert each item from the replacement list before the child
+            for i in range(len(replacementChildren)):
+                self.childNodes.insert(i + childIndex - 1, replacementChildren[i])
+
+            # Mark the node that's been replaced to be deleted
+            childNode.toBeDeleted = True
+
+            # Fix up the tree levels - from root downwards
+            #self.repairSubtreeLevels(int(self.data["level"])-1)
+        else:
+            # Supposed child node isn't a child of this CSVTree object
+            sys.stderr.write(childNode.data["cell"] + " is not a child of " + self.data["cell"] + "\n")
 
     def isMatch(self, criterion):
         """
@@ -749,27 +782,29 @@ class CSVTree:
             | (re.search(criterion, self.data["cell"]) is not None)
         )
 
-    def applyFilter(self, criterion, actionsList):
+    def applyActions(self, criterion, actionsList):
         """
         Apply filter to this node - if not tree root
         """
-        propagate = True
+        propagateToChildren = True
         if self.data["level"] != -1:
             if self.isMatch(criterion):
                 # Matched so apply all actions triggered by this match
                 for action in actionsList:
                     if action == "delete":
-                        # Delete the node
-                        self.parent.deleteChild(self)
+                        # Mark the node for deletion
+                        self.toBeDeleted = True
 
                         # Don't propagate
-                        propagate = False
+                        propagateToChildren = False
+                    elif action == "asbullet":
+                        self.makeAsBulletOfParent()
                     elif action[0] == "{":
                         # position specified
                         self.data["position"] = action
 
                         # Don't propagate
-                        propagate = False
+                        propagateToChildren = False
                     elif action == "note":
                         # Document the match in the note field
                         if self.data["note"] != "":
@@ -817,9 +852,9 @@ class CSVTree:
                         )
 
         # Apply filter to children, recursively - if propagation is indicated
-        if propagate:
+        if propagateToChildren:
             for child in self.childNodes:
-                child.applyFilter(criterion, actionsList)
+                child.applyActions(criterion, actionsList)
 
     def writeCSVTree(self, outputArray):
         # Compose this node's line - if not root node
@@ -837,6 +872,7 @@ class CSVTree:
             child.writeCSVTree(outputArray)
 
         return outputArray
+        
 
     def getCounter(self, counter=None):
         """
@@ -899,7 +935,7 @@ class CSVTree:
 
     def repairSubtreeLevels(self, parentLevel):
         # Repair this level
-        self.data["level"] = parentLevel + 1
+        self.data["level"] = str(parentLevel + 1)
 
         # Repair lower levels
         for childNode in self.childNodes:
@@ -1477,17 +1513,54 @@ class CSVTree:
                                          -1
         square                           0                     Foo
         """
-        s = "".join(f"{str(value)[:10]:<11}" for value in self.data.values())
+        s = "".join(f"{str(value)[:10]:<11}".replace("\n","\\n") for value in self.data.values())
         s = f"{'  ' * int(self.data['level'])}{s.rstrip()}" + "\n"
         return s + "".join(child.dump(actionsList) for child in self.getChildren())
 
+    def dump2(self, treeLevel) -> str:
+       s = str(treeLevel) + " " + str(self.data['level']) + " " + self.data['cell']+"\n"
+       return s +  "".join(child.dump2(treeLevel+1) for child in self.getChildren())
+
+    def dumpAll(self):
+        # Find root Node
+        rootNode = self.parent
+        while rootNode.parent is not None:
+            rootNode = rootNode.parent
+        
+        # Dump from the root downwards
+        return rootNode.dump2(-1)
+
+    def makeAsBulletOfParent(self):
+        if self.toBeDeleted:
+            return
+
+        # Acquire the parent
+        if self.parent.data["level"] == -1:
+            # Can't make this node a bullet under parent if parent is root i.e. level -1
+            sys.stderr.write(f"Node {self.data['cell']} has no parent.\n")
+        else:
+            # Get parent cell value - to append to
+            parentCellValue = self.parent.data['cell']
+
+            # Acquire this cell's value and add as a bullet to parent's cell value
+            cellValue = self.data['cell']
+            newParentCellValue = parentCellValue + "\n" + "* " + cellValue
+
+            # set parent's cell value to the newly augmented one
+            self.parent.data['cell'] = newParentCellValue
+
+            # Promote the nodes under this one, replacing it        
+            self.parent.replaceChild(self,self.childNodes)
+            
 
 def formatWhitespaceCharacters(whitespace):
     """
     >>> formatWhitespaceCharacters("a b \\t c d")
     '<tab><space><tab><space><tab><space><tab><space><tab>'
     """
-    return "".join("<space>" if c == " " else "<tab>" for c in whitespace)
+    # return "".join("<space>" if c == " " else "<tab>" for c in whitespace)
+    return "".join("<space>" if c == " " else "<newline>" if c == "\n" else "<tab>" for c in whitespace)
+
 
 
 def writeOutput(printLines):
@@ -1589,6 +1662,14 @@ if __name__ == "__main__":
                     sys.exit()
                 # commands that generate no output fall through
             else:
-                csvTree.applyFilter(matchCriterion, actionsList)
+                csvTree.applyActions(matchCriterion, actionsList)
+                
+                # It's possible some nodes were deleted so actually remove them
+                csvTree.cleanUpDeleted()
+                
+                csvTree.repairSubtreeLevels(-2)
+                
+                print(csvTree.childNodes[0].dumpAll())
+
 
     TreeWriter().writeTreeAsCSV()
