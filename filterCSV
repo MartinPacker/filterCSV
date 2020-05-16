@@ -1685,6 +1685,4 @@ if __name__ == "__main__":
 
                 csvTree.repairSubtreeLevels(-2)
 
-                print(csvTree.childNodes[0].dumpAll())
-
     TreeWriter().writeTreeAsCSV()

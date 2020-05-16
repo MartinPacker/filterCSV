@@ -145,6 +145,16 @@ Here is an example - produced by specifying `stats text`:
         2     1              1
         3     1              1
 
+####  Merging Nodes Into Their Parent node
+
+You can merge a matching node into its parent as a bullet.
+
+To do this specify `asbullet`. For example
+
+    filterCSV ^A1$ asbullet < input.csv > output.csv
+
+will merge any bullet whose text or note is 'A1' with its parent. The text of the note will be merged in, with the two characters '* ' denoting it's a bulleted item.
+
 ### Input Files
 
 Input files can be in one of four formats:
