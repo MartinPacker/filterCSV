@@ -254,7 +254,7 @@ class TreeReader:
             newRow.append(str(level))
 
             # Insert blank cells - according to level
-            for l in range(level):
+            for lev in range(level):
                 newRow.append("")
 
             # Clean the line text to remove any list item marker
