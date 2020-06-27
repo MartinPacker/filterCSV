@@ -59,6 +59,8 @@ Actions you can take include:
 
 In the following action specifications are case-insensitive; If you specify, for example, an action in upper case it will be converted to lower case before being applied to matching nodes.
 
+You can, in most cases, specify a sequence of actions. You can separate them by spaces or commas. If you specify multiple actions you probably need to surround them with a pair of single quotes.
+
 #### Colour Numbers
 
 A colour number is a 1- or 2-digit number. It is specified relative to the top left of iThoughts' colour palette. (`1` is the first colour in the palette.)
