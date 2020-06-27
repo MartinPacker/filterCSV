@@ -19,7 +19,7 @@ Based on matching regular expressions you can do things such as:
 
 You can check the structure of the input CSV file is good for importing into iThoughts.
 
-You can export the CSV file as a Markdown file consisting of headings and bulleted lists.
+You can export the CSV file as a Markdown file consisting of headings and bulleted lists, and in a number of other formats.
 
 **NOTE:** In this document we will use terms such as "mind map" and "tree". Structurally the data represents a tree. \
 It might or might not be used for mapping your mind.
@@ -243,7 +243,7 @@ You can specify Markdown output by invocations such as
 
 or
 
-    filterCSV markdown '2 3` < myfile.csv > myfile.md
+    filterCSV markdown '2 3' < myfile.csv > myfile.md
 
 In the first case three levels of heading are required, starting with heading level 1. (Heading level 1 is the default).
 
@@ -271,6 +271,36 @@ filterCSV can output to OPML XML format, but support for notes and colours by ot
 
     filterCSV xml opml < myfile.csv > myfile.opml
 
+#### GraphViz .dot format
+
+filterCSV can export in a format compatible with the GraphViz .dot language. It creates a digraph (directed graph). Here is a sample output file:
+
+    digraph {
+     rankdir=TB
+      N1[label="A"]
+      N2[label="A1"]
+      N1 -> N2
+      N3[label="A2"]
+      N1 -> N3
+      N4[label="A2A",fillcolor="#00ff00",shape="rectangle",style="rounded,filled"]
+      N3 -> N4
+      N5[label="A2A1",fillcolor="#00ff00",shape="rectangle",style="rounded,filled"]
+      N4 -> N5
+      N6[label="X",shape="square"]
+    }
+
+Here a number of nodes, whose names begin with "N", are defined. Additionally, directed links (arcs with arrows on them) are defined between them. \
+filterCSV preserves colours and most shapes on export to .dot format.
+
+Here is a sample invocation:
+
+    filterCSV digraph vertical < test.csv > test.dot
+    
+You can use the dot command (part of GraphViz) to turn this into a PNG graphic:
+
+    dot -Tpng test.dot > test.png
+    
+In the above example the parameter `vertical` was used to align the root nodes next to each other, with descendants down the page. \ If you specify any other value, for example 'horizontal' or '.' the alignment will be horizontal. (You can use `v` for short, for `vertical`.)
 ## Test Files
 
 [tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.

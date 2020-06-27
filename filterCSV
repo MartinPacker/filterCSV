@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.3"
-filterCSV_date = "16 May, 2020"
+filterCSV_level = "1.4"
+filterCSV_date = "27 June, 2020"
 
 
 class ParameterParser:
@@ -62,8 +62,8 @@ class ParameterParser:
             parmNumber += 1
 
             # Handle the actions that go with this match criterion
-            actionsString = sys.argv[parmNumber].lower()
-            actionList = actionsString.split()
+            actionsString = sys.argv[parmNumber].lower().replace(' ', ',')
+            actionList = actionsString.split(',')
 
             # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as
             # the colour number or shape
@@ -990,6 +990,89 @@ class CSVTree:
 
         return output
 
+    def exportToDotDigraph(self, actionsList):
+        # Get the number of heading levels to allow before going to nested bulleted
+        output, dummy = self._exportToDotDigraph(-1,0)
+        
+        if actionsList[0][0:1] == "v":
+            graphAttributes = "\n rankdir=TB"
+        else:
+            graphAttributes = "\n  rankdir=LR"
+        
+        output=['digraph {' + graphAttributes ] + output + ['}']
+        return output
+
+    def _exportToDotDigraph(self, parentItemNumber,thisItemNumber):
+        # Prime array of output lines
+        output = []
+        
+        if thisItemNumber > 0:
+            attributes = 'label="' + self.data['cell']+'"'
+            
+            colour = self.data["colour"] or "FFFFFF"
+            if colour == "FFFFFF":
+                wantFilled = False
+            else:
+                wantFilled = True
+                attributes = attributes + ',fillcolor="#' + colour + '"'
+            
+            shape = self.data['shape']
+            wantRounded = False
+            if  shape != "":
+                if shape == "auto":
+                    attributes = attributes + ',shape="rectangle"'
+                    wantRounded = True
+                elif shape == "rectangle":
+                    attributes = attributes + ',shape="rectangle"'
+                elif shape == "square":
+                    attributes = attributes + ',shape="square"'
+                elif shape == "rounded": 
+                    attributes = attributes + ',shape="rectangle"'
+                    wantRounded = True
+                elif shape == "pill":
+                    attributes = attributes + ',shape="rectangle"'
+                    wantRounded = True
+                elif shape == "parallelogram":                
+                    attributes = attributes + ',shape="parallelogram"'
+                elif shape == "diamond":
+                    attributes = attributes + ',shape="diamond"'
+                elif shape == "triangle":
+                    attributes = attributes + ',shape="triangle"'
+                elif shape == "oval":
+                    attributes = attributes + ',shape="oval"'
+                elif shape == "circle":
+                    attributes = attributes + ',shape="circle"'
+                elif shape == "underline":
+                    attributes = attributes + ',shape="underline"'
+                elif shape == "none":
+                    attributes = attributes + ',shape="none"'
+                elif shape == "square bracket":
+                    attributes = attributes + ',shape="rectangle"'
+                elif shape == "round bracket":
+                    attributes = attributes + ',shape="ellipse"'
+                else:
+                    attributes = attributes + ',shape="rectangle"'
+
+            if wantRounded | wantFilled:
+                styles = []
+                if wantRounded:
+                    styles.append('rounded')
+                if wantFilled:
+                    styles.append('filled')
+                attributes = attributes + ',style="'+ ','.join(styles)+'"'
+            
+            output.append("  N" + str(thisItemNumber) + '[' + attributes + ']')
+            if parentItemNumber > 0:
+                output.append("  N" + str(parentItemNumber) + " -> N" +str(thisItemNumber))
+
+        nextItemNumber = thisItemNumber + 1
+        for childNode in self.childNodes:
+            returnedOutput, nextItemNumber = childNode._exportToDotDigraph(thisItemNumber, nextItemNumber)
+            output += returnedOutput
+
+
+        return output,nextItemNumber
+
     def calculateMaximumLevel(self, level=0):
         """
         maximum level is the max of this level and the levels of all childNodes,
@@ -1670,6 +1753,7 @@ if __name__ == "__main__":
                 "stats": csvTree.writeStatistics,
                 "xml": csvTree.exportToXML,
                 "vspread": csvTree.doVerticalSpread,
+                "digraph": csvTree.exportToDotDigraph,
             }.get(matchCriterion.pattern.lower())
             if func:
                 output = func(actionsList)
