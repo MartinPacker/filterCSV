@@ -62,8 +62,8 @@ class ParameterParser:
             parmNumber += 1
 
             # Handle the actions that go with this match criterion
-            actionsString = sys.argv[parmNumber].lower().replace(' ', ',')
-            actionList = actionsString.split(',')
+            actionsString = sys.argv[parmNumber].lower().replace(" ", ",")
+            actionList = actionsString.split(",")
 
             # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as
             # the colour number or shape
@@ -992,33 +992,33 @@ class CSVTree:
 
     def exportToDotDigraph(self, actionsList):
         # Get the number of heading levels to allow before going to nested bulleted
-        output, dummy = self._exportToDotDigraph(-1,0)
-        
+        output, dummy = self._exportToDotDigraph(-1, 0)
+
         if actionsList[0][0:1] == "v":
             graphAttributes = "\n rankdir=TB"
         else:
             graphAttributes = "\n  rankdir=LR"
-        
-        output=['digraph {' + graphAttributes ] + output + ['}']
+
+        output = ["digraph {" + graphAttributes] + output + ["}"]
         return output
 
-    def _exportToDotDigraph(self, parentItemNumber,thisItemNumber):
+    def _exportToDotDigraph(self, parentItemNumber, thisItemNumber):
         # Prime array of output lines
         output = []
-        
+
         if thisItemNumber > 0:
-            attributes = 'label="' + self.data['cell']+'"'
-            
+            attributes = 'label="' + self.data["cell"] + '"'
+
             colour = self.data["colour"] or "FFFFFF"
             if colour == "FFFFFF":
                 wantFilled = False
             else:
                 wantFilled = True
                 attributes = attributes + ',fillcolor="#' + colour + '"'
-            
-            shape = self.data['shape']
+
+            shape = self.data["shape"]
             wantRounded = False
-            if  shape != "":
+            if shape != "":
                 if shape == "auto":
                     attributes = attributes + ',shape="rectangle"'
                     wantRounded = True
@@ -1026,13 +1026,13 @@ class CSVTree:
                     attributes = attributes + ',shape="rectangle"'
                 elif shape == "square":
                     attributes = attributes + ',shape="square"'
-                elif shape == "rounded": 
+                elif shape == "rounded":
                     attributes = attributes + ',shape="rectangle"'
                     wantRounded = True
                 elif shape == "pill":
                     attributes = attributes + ',shape="rectangle"'
                     wantRounded = True
-                elif shape == "parallelogram":                
+                elif shape == "parallelogram":
                     attributes = attributes + ',shape="parallelogram"'
                 elif shape == "diamond":
                     attributes = attributes + ',shape="diamond"'
@@ -1056,22 +1056,25 @@ class CSVTree:
             if wantRounded | wantFilled:
                 styles = []
                 if wantRounded:
-                    styles.append('rounded')
+                    styles.append("rounded")
                 if wantFilled:
-                    styles.append('filled')
-                attributes = attributes + ',style="'+ ','.join(styles)+'"'
-            
-            output.append("  N" + str(thisItemNumber) + '[' + attributes + ']')
+                    styles.append("filled")
+                attributes = attributes + ',style="' + ",".join(styles) + '"'
+
+            output.append("  N" + str(thisItemNumber) + "[" + attributes + "]")
             if parentItemNumber > 0:
-                output.append("  N" + str(parentItemNumber) + " -> N" +str(thisItemNumber))
+                output.append(
+                    "  N" + str(parentItemNumber) + " -> N" + str(thisItemNumber)
+                )
 
         nextItemNumber = thisItemNumber + 1
         for childNode in self.childNodes:
-            returnedOutput, nextItemNumber = childNode._exportToDotDigraph(thisItemNumber, nextItemNumber)
+            returnedOutput, nextItemNumber = childNode._exportToDotDigraph(
+                thisItemNumber, nextItemNumber
+            )
             output += returnedOutput
 
-
-        return output,nextItemNumber
+        return output, nextItemNumber
 
     def calculateMaximumLevel(self, level=0):
         """
