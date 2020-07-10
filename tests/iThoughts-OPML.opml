@@ -1,0 +1,15 @@
+<opml version="1.0">
+	<head>
+		<title>
+			Central Idea
+		</title>
+	</head>
+	<body>
+		<outline text="A single line item">
+			<outline text="A two&#10;line item">
+			</outline>
+			<outline text="Another item">
+			</outline>
+		</outline>
+	</body>
+</opml>
