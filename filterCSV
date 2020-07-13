@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.4"
-filterCSV_date = "27 June, 2020"
+filterCSV_level = "1.5"
+filterCSV_date = "13 July, 2020"
 
 
 class ParameterParser:
@@ -269,35 +269,31 @@ class TreeReader:
             csvRows.append(newRow)
 
         return self.ensureMandatoryColumns(csvRows) + (output,)
-
-    def readXMLTree(self, inputFile):
-        output = []
-
-        # Prepare the input text for namespace parsing and XML parsing
-        XMLText = "\n".join(inputFile)
-
-        # Create the XML parse tree
-        self.XMLTree = ElementTree.fromstring(XMLText)
-
-        # Hunt for the default namespace
-        split1 = XMLText.split('xmlns="')
-        if len(split1) == 1:
-            output.append("No default namespace specification.")
-            self.defaultXMLNamespace = ""
-        else:
-            self.defaultXMLNamespace = split1[1].split('"')[0]
-            output.append(f"Default namespace is '{self.defaultXMLNamespace}'")
-
-        # Hunt for other namespaces
+        
+    def readOPMLTree(self, tree):
         self.XMLNamespaces = {}
-        split3 = XMLText.split("xmlns:")
-        for fragment in range(len(split3)):
-            if fragment > 0:
-                split4 = split3[fragment].split('="')
-                key = split4[0]
-                split5 = split4[1].split('"')
-                value = split5[0]
-                self.XMLNamespaces[key] = value
+
+        output = ["XML is specifically 'OPML'.\n"]
+
+        if tree[0].tag == "head":
+            # Level 0 node will be the contents of the title element within the 
+            # head element
+            titleText = tree[0][0].text.strip()
+            haveHead = True
+            
+            if (len(tree) > 1) & (tree[1].tag == "body"):
+                haveBody = True
+                bodyElement = tree[1]
+            else:
+                haveBody = False
+        else:
+            haveHead = False
+            
+            if tree[0].tag == "body":
+                haveBody = True
+                bodyElement = tree[0]
+            else:
+                haveBody = False
 
         # Build array of rows
         csvRows = []
@@ -333,10 +329,136 @@ class TreeReader:
                 "level20",
             ],
         )
-
-        csvRows += self._readXMLTree(self.XMLTree, 0)
-
+        
+        if haveHead:
+            headCSVRow = [
+                "",
+                "",
+                "",
+                "0",
+                titleText
+            ]
+        
+            csvRows.append(headCSVRow)
+            
+            if haveBody:
+                # Any level 1+ elements are children of the body element
+                for child in bodyElement:
+                    csvRows += self._readOPMLTree(child,1)
+            else:
+                # All top-level children of tree, except head, are level 1
+                for child in tree:
+                    if child.tag != "head":
+                        csvRows += self._readOPMLTree(child,1)
+        else:
+            # Don't have a head row so have to look for body or top-level outline
+            # elements
+            if haveBody:
+                # All top-level children of body element are level 0
+                for child in bodyElement:
+                    csvRows += self._readOPMLTree(child,0)
+            else:
+                # All top-level children of tree are level 0
+                for child in tree:
+                    csvRows += self._readOPMLTree(child,0)
+        
         return self.ensureMandatoryColumns(csvRows) + (output,)
+
+    def _readOPMLTree(self,XMLNode,level):
+        csvRows = []
+        nodeText = XMLNode.attrib["text"]
+
+        nodeRow = [
+                "",
+                "",
+                "",
+                str(level)
+            ]
+
+        levelBlankCells = [""] * (level)
+        nodeRow += levelBlankCells
+
+        nodeRow.append(nodeText)
+        csvRows.append(nodeRow)
+        
+        for child in XMLNode:
+           csvRows += self._readOPMLTree(child, level + 1)
+        
+        return csvRows
+
+    def readXMLTree(self, inputFile):
+        output = []
+
+        # Prepare the input text for namespace parsing and XML parsing
+        XMLText = "\n".join(inputFile)
+
+        # Create the XML parse tree
+        self.XMLTree = ElementTree.fromstring(XMLText)
+        
+        # Check if OPML
+        if self.XMLTree.tag == "opml":
+            # Is OPML so treat separately from other XML
+            return self.readOPMLTree(self.XMLTree)
+        else:
+            # Is not OPML
+            # Hunt for the default namespace
+            split1 = XMLText.split('xmlns="')
+            if len(split1) == 1:
+                output.append("No default namespace specification.")
+                self.defaultXMLNamespace = ""
+            else:
+                self.defaultXMLNamespace = split1[1].split('"')[0]
+                output.append(f"Default namespace is '{self.defaultXMLNamespace}'")
+
+            # Hunt for other namespaces
+            self.XMLNamespaces = {}
+            split3 = XMLText.split("xmlns:")
+            for fragment in range(len(split3)):
+                if fragment > 0:
+                    split4 = split3[fragment].split('="')
+                    key = split4[0]
+                    split5 = split4[1].split('"')
+                    value = split5[0]
+                    self.XMLNamespaces[key] = value
+
+            # Build array of rows
+            csvRows = []
+
+            # Insert a header row, with attribute columns and a level0 column plus other
+            # levels
+            csvRows.append(
+                [
+                    "position",
+                    "colour",
+                    "shape",
+                    "level",
+                    "level0",
+                    "level1",
+                    "level2",
+                    "level3",
+                    "level4",
+                    "level5",
+                    "level6",
+                    "level7",
+                    "level8",
+                    "level9",
+                    "level10",
+                    "level11",
+                    "level12",
+                    "level13",
+                    "level14",
+                    "level15",
+                    "level16",
+                    "level17",
+                    "level18",
+                    "level19",
+                    "level20",
+                ],
+            )
+
+            csvRows += self._readXMLTree(self.XMLTree, 0)
+
+            return self.ensureMandatoryColumns(csvRows) + (output,)
 
     def resolveNamespaces(self, textToEdit):
         editedText = textToEdit.replace("{" + self.defaultXMLNamespace + "}", "")
