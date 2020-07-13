@@ -159,11 +159,12 @@ will merge any bullet whose text or note is 'A1' with its parent. The text of th
 
 ### Input Files
 
-Input files can be in one of four formats:
+Input files can be in one of five formats:
 
 * A CSV file that is already in a format supported by iThoughts' Import function.
 * A flat file where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at.
 * A Markdown nested list where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at. Only an asterisk (`*`) followed by a space is supported as a list item marker.
+* An OPML XML file - with or without `head` or `body` elements.
 * An XML file, including one with namespaces (both default and named).
 
 #### Nesting Level Detection
