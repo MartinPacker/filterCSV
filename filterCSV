@@ -269,7 +269,7 @@ class TreeReader:
             csvRows.append(newRow)
 
         return self.ensureMandatoryColumns(csvRows) + (output,)
-        
+
     def readOPMLTree(self, tree):
         self.XMLNamespaces = {}
 
@@ -329,7 +329,7 @@ class TreeReader:
                 "level20",
             ],
         )
-        
+
         if haveHead:
             headCSVRow = [
                 "",
