@@ -1,6 +1,6 @@
 Criterion                                Actions
 ---------                                -------
-^A1$                                     3 note
+^A1$                                     3,note
 
 
 Input type detected as 'iThoughtsCSV'.
