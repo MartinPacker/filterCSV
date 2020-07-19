@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.6"
-filterCSV_date = "18 July, 2020"
+filterCSV_date = "19 July, 2020"
 
 
 class ParameterParser:
@@ -339,13 +339,7 @@ class TreeReader:
         )
 
         if haveHead:
-            headCSVRow = [
-                "",
-                "",
-                "",
-                "0",
-                titleText
-            ]
+            headCSVRow = ["", "", "", "0", titleText]
 
             csvRows.append(headCSVRow)
 
@@ -376,12 +370,7 @@ class TreeReader:
         csvRows = []
         nodeText = XMLNode.attrib["text"]
 
-        nodeRow = [
-                "",
-                "",
-                "",
-                str(level)
-            ]
+        nodeRow = ["", "", "", str(level)]
 
         levelBlankCells = [""] * (level)
         nodeRow += levelBlankCells
@@ -974,9 +963,7 @@ class CSVTree:
                 )
 
             else:
-                self.data["colour"] = iThoughtsColours.getColour(
-                    colourNumber
-                )
+                self.data["colour"] = iThoughtsColours.getColour(colourNumber)
         else:
             sys.stderr.write(
                 f"Erroneous action value {action} "
@@ -998,7 +985,9 @@ class CSVTree:
                         if self.data["level"] == wantedLevel:
                             # We have a node at the right level
                             for action in actionsList:
-                                propagateToChildren = self.applyAction(criterion, action, propagateToChildren)
+                                propagateToChildren = self.applyAction(
+                                    criterion, action, propagateToChildren
+                                )
                     else:
                         # The level specified wasn't an integer
                         print(f"Bad level string '{potentialLevelString}")
@@ -1008,7 +997,9 @@ class CSVTree:
             elif self.isMatch(criterion):
                 # Matched so apply all actions triggered by this match
                 for action in actionsList:
-                    propagateToChildren = self.applyAction(criterion, action, propagateToChildren)
+                    propagateToChildren = self.applyAction(
+                        criterion, action, propagateToChildren
+                    )
 
         # Apply filter to children, recursively - if propagation is indicated
         if propagateToChildren:
