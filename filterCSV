@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.5"
-filterCSV_date = "13 July, 2020"
+filterCSV_level = "1.6"
+filterCSV_date = "19 July, 2020"
 
 
 class ParameterParser:
@@ -55,8 +55,16 @@ class ParameterParser:
             # Handle match criterion
             matchCriterion = sys.argv[parmNumber]
             if matchCriterion == "all":
+                # This regex is guaranteed to match anything
                 matchCriteria.append(re.compile(".*"))
+            elif matchCriterion == "none":
+                # This regex is guaranteed to match nothing - and to fail quickly
+                matchCriteria.append(re.compile("a^"))
+            elif matchCriterion.startswith("@"):
+                # Pass through a level match criterion
+                matchCriteria.append(matchCriterion)
             else:
+                # Some other criterion
                 matchCriteria.append(re.compile(matchCriterion))
 
             parmNumber += 1
@@ -331,13 +339,7 @@ class TreeReader:
         )
 
         if haveHead:
-            headCSVRow = [
-                "",
-                "",
-                "",
-                "0",
-                titleText
-            ]
+            headCSVRow = ["", "", "", "0", titleText]
 
             csvRows.append(headCSVRow)
 
@@ -368,12 +370,7 @@ class TreeReader:
         csvRows = []
         nodeText = XMLNode.attrib["text"]
 
-        nodeRow = [
-                "",
-                "",
-                "",
-                str(level)
-            ]
+        nodeRow = ["", "", "", str(level)]
 
         levelBlankCells = [""] * (level)
         nodeRow += levelBlankCells
@@ -909,74 +906,100 @@ class CSVTree:
             | (re.search(criterion, self.data["cell"]) is not None)
         )
 
+    def applyAction(self, criterion, action, propagateToChildren):
+        if action == "delete":
+            # Mark the node for deletion
+            self.toBeDeleted = True
+
+            # Don't propagate
+            propagateToChildren = False
+        elif action == "asbullet":
+            self.makeAsBulletOfParent()
+        elif action[0] == "{":
+            # position specified
+            self.data["position"] = action
+
+            # Don't propagate
+            propagateToChildren = False
+        elif action == "note":
+            # Document the match in the note field
+            if isinstance(criterion, str):
+                criterionString = criterion
+            else:
+                criterionString = criterion.pattern
+
+            if self.data["note"] != "":
+                self.data["note"] += "\nMatched " + criterionString
+            else:
+                self.data["note"] = "Matched " + criterionString
+        elif action == "noshape":
+            # Remove any shape specification from the matched node
+            self.data["shape"] = ""
+        elif action == "nonote":
+            # Remove any note specification from the matched node
+            self.data["note"] = ""
+        elif action == "noposition":
+            # Remove any position specification from the matched node
+            self.data["position"] = ""
+        elif action == "nocolour":
+            # Remove any colour specification from the matched node
+            self.data["colour"] = ""
+        elif len(action) == 6 and all(c in hexdigits for c in action):
+            # 6-digit hexadecimal so is colour RGB value
+            self.data["colour"] = action
+        elif action in iThoughtsShapes:
+            # Is a shape
+            self.data["shape"] = action
+        elif action.isdigit():
+            # Attempt to parse as from the colour palette
+            colourNumber = int(action)
+
+            # We have an integer. If it is too big but not 6 digits
+            # we flag an error and don't do the update
+            if colourNumber > len(iThoughtsColours):
+                sys.stderr.write(
+                    f"Erroneous colour value {colourNumber} "
+                    f"(Pattern was: '{criterion.pattern}')." + "\n"
+                )
+
+            else:
+                self.data["colour"] = iThoughtsColours.getColour(colourNumber)
+        else:
+            sys.stderr.write(
+                f"Erroneous action value {action} "
+                f"(Pattern was: '{criterion.pattern}')." + "\n"
+            )
+        return propagateToChildren
+
     def applyActions(self, criterion, actionsList):
         """
         Apply filter to this node - if not tree root
         """
         propagateToChildren = True
         if self.data["level"] != -1:
-            if self.isMatch(criterion):
+            if isinstance(criterion, str):
+                if criterion.startswith("@level:"):
+                    potentialLevelString = criterion[7:].rstrip()
+                    if potentialLevelString.isdigit():
+                        wantedLevel = int(potentialLevelString)
+                        if self.data["level"] == wantedLevel:
+                            # We have a node at the right level
+                            for action in actionsList:
+                                propagateToChildren = self.applyAction(
+                                    criterion, action, propagateToChildren
+                                )
+                    else:
+                        # The level specified wasn't an integer
+                        print(f"Bad level string '{potentialLevelString}")
+                else:
+                    # Criterion is a regular expression rather than a string
+                    print(f"Bad criterion: '{criterion}'.")
+            elif self.isMatch(criterion):
                 # Matched so apply all actions triggered by this match
                 for action in actionsList:
-                    if action == "delete":
-                        # Mark the node for deletion
-                        self.toBeDeleted = True
-
-                        # Don't propagate
-                        propagateToChildren = False
-                    elif action == "asbullet":
-                        self.makeAsBulletOfParent()
-                    elif action[0] == "{":
-                        # position specified
-                        self.data["position"] = action
-
-                        # Don't propagate
-                        propagateToChildren = False
-                    elif action == "note":
-                        # Document the match in the note field
-                        if self.data["note"] != "":
-                            self.data["note"] += "\nMatched " + criterion.pattern
-                        else:
-                            self.data["note"] = "Matched " + criterion.pattern
-                    elif action == "noshape":
-                        # Remove any shape specification from the matched node
-                        self.data["shape"] = ""
-                    elif action == "nonote":
-                        # Remove any note specification from the matched node
-                        self.data["note"] = ""
-                    elif action == "noposition":
-                        # Remove any position specification from the matched node
-                        self.data["position"] = ""
-                    elif action == "nocolour":
-                        # Remove any colour specification from the matched node
-                        self.data["colour"] = ""
-                    elif len(action) == 6 and all(c in hexdigits for c in action):
-                        # 6-digit hexadecimal so is colour RGB value
-                        self.data["colour"] = action
-                    elif action in iThoughtsShapes:
-                        # Is a shape
-                        self.data["shape"] = action
-                    elif action.isdigit():
-                        # Attempt to parse as from the colour palette
-                        colourNumber = int(action)
-
-                        # We have an integer. If it is too big but not 6 digits
-                        # we flag an error and don't do the update
-                        if colourNumber > len(iThoughtsColours):
-                            sys.stderr.write(
-                                f"Erroneous colour value {colourNumber} "
-                                f"(Pattern was: '{criterion.pattern}')." + "\n"
-                            )
-
-                        else:
-                            self.data["colour"] = iThoughtsColours.getColour(
-                                colourNumber
-                            )
-                    else:
-                        sys.stderr.write(
-                            f"Erroneous action value {action} "
-                            f"(Pattern was: '{criterion.pattern}')." + "\n"
-                        )
+                    propagateToChildren = self.applyAction(
+                        criterion, action, propagateToChildren
+                    )
 
         # Apply filter to children, recursively - if propagation is indicated
         if propagateToChildren:
@@ -1864,7 +1887,9 @@ if __name__ == "__main__":
     # contains parameters for that command. e.g. "markdown"
     for parmPair, matchCriterion in enumerate(matchCriteria):
         actionsList = actionsLists[parmPair]
-        if matchCriterion.pattern.lower() == "dump":
+        if (isinstance(matchCriterion, str)) and (matchCriterion.startswith("@")):
+            csvTree.applyActions(matchCriterion, actionsList)
+        elif matchCriterion.pattern.lower() == "dump":
             sys.stderr.write(csvTree.dump(actionsList))
         elif actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
