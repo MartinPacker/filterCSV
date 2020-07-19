@@ -38,11 +38,25 @@ Command line parameters are pairs of:
 
 ### Specifiers
 
-Specifiers are regular expressions in a format the Python `re` module understands.
+Specifiers are used to specify which nodes to operate on and can be in one of the following forms.
 
-A special value `all` matches all nodes.
+* Regular expressions in a format the Python `re` module understands.
+* A special value of `all`, matching all nodes.
+* A special value of `none`, matching no nodes.
+* A level specifier of the form `@level:n` - where `n` is an integer, referring to the level number.
+
+**Notes:**
 
 If you want to match a cell's text exactly you can code something like `^A1$` where `^` means 'the start of the text' and `$` means 'the end of the text'.
+
+In the `level:n` form of the specifier the level of a node is taken from how it was read in - though that could be modified by `check repairsubtree`. \
+If you're not sure the levels are properly numbered you should run `check repairsubtree` first. For example
+
+```
+filterCSV < input_file.csv > output_file.csv \
+    check repairsubtree \
+    @level:1 'triangle note'
+```
 
 ### Actions
 
