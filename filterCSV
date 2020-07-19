@@ -1887,7 +1887,7 @@ if __name__ == "__main__":
     # contains parameters for that command. e.g. "markdown"
     for parmPair, matchCriterion in enumerate(matchCriteria):
         actionsList = actionsLists[parmPair]
-        if matchCriterion.startswith("@"):
+        if (isinstance(matchCriterion, str)) and (matchCriterion.startswith("@")):
             csvTree.applyActions(matchCriterion, actionsList)
         elif matchCriterion.pattern.lower() == "dump":
             sys.stderr.write(csvTree.dump(actionsList))
