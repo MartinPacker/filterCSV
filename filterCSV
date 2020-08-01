@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.6"
-filterCSV_date = "19 July, 2020"
+filterCSV_level = "1.7"
+filterCSV_date = "31 July, 2020"
 
 
 class ParameterParser:
@@ -107,19 +107,25 @@ class ParameterParser:
 
 
 class TreeReader:
-    def detectInputStreamType(self, firstLine):
+    def detectInputStreamType(self, inputFile):
+        firstLine = inputFile[0]
         firstChar = firstLine[0]
 
-        if firstLine.find("level0") > -1:
+        if firstLine.lower().find("level0") > -1:
             return "iThoughtsCSV"
-        elif firstChar == "<":
-            return "XML"
-        elif firstChar in ["#", "*"]:
-            return "markdown"
-        elif firstChar == '"':
-            return "CSV"
         else:
-            return "text"
+            for line in inputFile:
+                if line.find(",") > -1:
+                    return "CSV"
+
+            if firstLine.find(",") > -1:
+                return "CSV"
+            elif firstChar == "<":
+                return "XML"
+            elif firstChar in ["#", "*"]:
+                return "markdown"
+            else:
+                return "text"
 
     @staticmethod
     def injectColumn(CSVArray, columnName):
@@ -139,6 +145,12 @@ class TreeReader:
         for column in "shape position note colour".split():
             if column not in csvRows[0]:
                 csvRows = self.injectColumn(csvRows, column)
+
+        # Ensure all title cells are lower case
+        cellNumber = 0
+        for cell in csvRows[0]:
+            csvRows[0][cellNumber] = cell.lower()
+            cellNumber += 1
 
         # Return the rows and the position of each column
         return (
@@ -166,21 +178,99 @@ class TreeReader:
         csvRows = [row for row in csv.reader(inputFile)]
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
+    def readNormalCSVTree(self, inputFile):
+        output = []
+
+        # Build a list of rows
+        csvRows = []
+        noteCells = []
+        for row in csv.reader(inputFile):
+            csvRows.append(row)
+            # See if there's another non-blank cell in the row
+            nonBlankCells = 0
+            lastNonBlankCell = 0
+            cellNumber = 0
+            for cell in row:
+                if cell != "":
+                    nonBlankCells += 1
+                    lastNonBlankCell = cellNumber
+                cellNumber += 1
+
+            # If there's another non-blank cell last such becomes a note
+            if nonBlankCells > 1:
+                noteCells.append(row[lastNonBlankCell])
+            else:
+                noteCells.append("")
+
+        # Add a header line
+        csvRows.insert(
+            0,
+            [
+                "level",
+                "level0",
+                "level1",
+                "level2",
+                "level3",
+                "level4",
+                "level5",
+                "level6",
+                "level7",
+                "level8",
+                "level9",
+                "level10",
+                "level11",
+                "level12",
+                "level13",
+                "level14",
+                "level15",
+                "level16",
+                "level17",
+                "level18",
+                "level19",
+                "level20",
+            ],
+        )
+
+        # Add level column to each row
+        rowNumber = 0
+        for row in csvRows:
+            if rowNumber > 0:
+                cellNumber = 0
+                for cell in row:
+                    if cell != "":
+                        break
+                    cellNumber += 1
+                row.insert(0, cellNumber)
+            rowNumber += 1
+
+        # Inject any notes (last blank cell)
+        csvRows = self.injectColumn(csvRows, "note")
+        noteColumn = csvRows[0].index("note")
+
+        rowNumber = 0
+        for row in csvRows:
+            if rowNumber > 0:
+                row[noteColumn] = noteCells[rowNumber - 1]
+            rowNumber += 1
+
+        return self.ensureMandatoryColumns(csvRows) + (output,)
+
     def readMarkdownOrTextTree(self, inputFile):
         output = []
 
         # Build array of rows
         csvRows = []
 
-        # Work out what an indent would be - in numbers of characters per level
-        indent = -1
+        # Work out what an indent would be - in numbers of characters per level,
+        # using the first indented line as the template.
+        indentLength = 0
         for line in inputFile:
-            indent = len(line) - len(line.lstrip())
-            if indent > 0:
+            indentLength = len(line) - len(line.lstrip())
+            if indentLength > 0:
                 # This is the first line with whitespace at the beginning
 
                 # Save the indentation whitespace
-                indentCharacters = line[0:indent]
+                indentCharacters = line[0:indentLength]
 
                 # Print the detected indentation - so user can debug
                 output.append(
@@ -223,42 +313,50 @@ class TreeReader:
         # right level - for each data line
         for lineNumber, line in enumerate(inputFile):
             # A data line so work out how many levels deep it is indented
-            lineIndent = len(line) - len(line.lstrip())
-            if lineIndent % indent > 0:
-                if lineIndent == 1:
-                    output.append("Bad indentation: 1 white space character.")
-                else:
-                    output.append(
-                        "Bad indentation:"
-                        + str(lineIndent)
-                        + " white space characters."
-                    )
+            if indentLength > 0:
+                lineIndentLength = len(line) - len(line.lstrip())
+                if lineIndentLength % indentLength > 0:
+                    if lineIndentLength == 1:
+                        output.append("Bad indentation: 1 white space character.")
+                    else:
+                        output.append(
+                            "Bad indentation:"
+                            + str(lineIndentLength)
+                            + " white space characters."
+                        )
 
-                output.append(
-                    "Should be multiple of "
-                    + str(indent)
-                    + ". Rounding level down to "
-                    + str(lineIndent / indent)
-                    + "."
-                )
-                output.append("Line in error (" + str(rowNumber) + ") is: " + line)
-                output.append(
-                    "Leading white space characters: "
-                    + formatWhitespaceCharacters(line[0:lineIndent])
-                )
-            else:
-                lineIndentCharacters = line[0:lineIndent]
-                if lineIndentCharacters != indentCharacters * (lineIndent // indent):
-                    output.append("Bad indentation characters:")
+                    output.append(
+                        "Should be multiple of "
+                        + str(indentLength)
+                        + ". Rounding level down to "
+                        + str(lineIndentLength / indentLength)
+                        + "."
+                    )
                     output.append("Line in error (" + str(lineNumber) + ") is: " + line)
                     output.append(
                         "Leading white space characters: "
-                        + formatWhitespaceCharacters(lineIndentCharacters)
+                        + formatWhitespaceCharacters(line[0:lineIndentLength])
                     )
+                else:
+                    lineIndentCharacters = line[0:lineIndentLength]
+                    if lineIndentCharacters != indentCharacters * (
+                        lineIndentLength // indentLength
+                    ):
+                        output.append("Bad indentation characters:")
+                        output.append(
+                            "Line in error (" + str(lineNumber) + ") is: " + line
+                        )
+                        output.append(
+                            "Leading white space characters: "
+                            + formatWhitespaceCharacters(lineIndentCharacters)
+                        )
 
             newRow = []
 
-            level = lineIndent // indent
+            if indentLength == 0:
+                level = 0
+            else:
+                level = lineIndentLength // indentLength
             newRow.append(str(level))
 
             # Insert blank cells - according to level
@@ -562,7 +660,7 @@ class TreeReader:
         inputFile = sys.stdin.readlines()
 
         # Detect the input stream type
-        inputType = self.detectInputStreamType(inputFile[0])
+        inputType = self.detectInputStreamType(inputFile)
 
         output.append(f"Input type detected as '{inputType}'.\n")
 
@@ -578,6 +676,30 @@ class TreeReader:
                 positionColumn,
                 output1,
             ) = self.readiThoughtsCSVTree(inputFile)
+
+            output += output1
+
+            csvRows = self.ensureColumnsPopulated(csvRows)
+
+            return (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output,
+            )
+        elif inputType == "CSV":
+            (
+                csvRows,
+                colourColumn,
+                levelColumn,
+                noteColumn,
+                shapeColumn,
+                positionColumn,
+                output1,
+            ) = self.readNormalCSVTree(inputFile)
 
             output += output1
 
@@ -915,6 +1037,10 @@ class CSVTree:
             propagateToChildren = False
         elif action == "asbullet":
             self.makeAsBulletOfParent()
+        elif action == "reverse":
+            self.reverseChildren()
+        elif action == "sort":
+            self.sortChildren()
         elif action[0] == "{":
             # position specified
             self.data["position"] = action
@@ -1797,6 +1923,19 @@ class CSVTree:
             # Promote the nodes under this one, replacing it
             self.parent.replaceChild(self, self.childNodes)
 
+    def sortKey(self, node):
+        return node.data["cell"]
+
+    def sortChildren(self):
+        newChildren = self.childNodes.copy()
+        newChildren.sort(reverse=False, key=self.sortKey)
+        self.childNodes = newChildren
+
+    def reverseChildren(self):
+        newChildren = self.childNodes.copy()
+        newChildren.reverse()
+        self.childNodes = newChildren
+
 
 def formatWhitespaceCharacters(whitespace):
     """
@@ -1896,14 +2035,14 @@ if __name__ == "__main__":
         else:
             func = {
                 "check": csvTree.checkHierarchy,
+                "digraph": csvTree.exportToDotDigraph,
                 "hspread": csvTree.doHorizontalSpread,
                 "html": csvTree.exportToHTML,
                 "markdown": csvTree.exportToMarkdown,
                 "promote": csvTree.promoteLevel,
                 "stats": csvTree.writeStatistics,
-                "xml": csvTree.exportToXML,
                 "vspread": csvTree.doVerticalSpread,
-                "digraph": csvTree.exportToDotDigraph,
+                "xml": csvTree.exportToXML,
             }.get(matchCriterion.pattern.lower())
             if func:
                 output = func(actionsList)
