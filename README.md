@@ -171,6 +171,28 @@ To do this specify `asbullet`. For example
 
 will merge any bullet whose text or note is 'A1' with its parent. The text of the note will be merged in, with the two characters '* ' denoting it's a bulleted item.
 
+#### Sorting Child Nodes
+
+You can sort the child nodes of selected nodes. The sort will be alphabetical and ascending.
+
+For example
+
+    filterCSV ^A1$ sort < input.csv > output.csv
+
+will sort all the children of the nodes whose text is "A1".
+
+#### Reversing The Order Of Child Nodes
+
+You can reverse the order of the child nodes of selected nodes.
+
+For example
+
+    filterCSV ^A1$ reverse < input.csv > output.csv
+
+will reverse the order of the children of the nodes whose text is "A1".
+
+You can use reverse after sort to make the sort effectively alphabetically descending.
+
 ### Input Files
 
 Input files can be in one of six formats:
