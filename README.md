@@ -318,9 +318,6 @@ You can use the dot command (part of GraphViz) to turn this into a PNG graphic:
     dot -Tpng test.dot > test.png
     
 In the above example the parameter `vertical` was used to align the root nodes next to each other, with descendants down the page. \ If you specify any other value, for example 'horizontal' or '.' the alignment will be horizontal. (You can use `v` for short, for `vertical`.)
-## Test Files
-
-[tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
 
 ### iThoughts CSV File Format
 
@@ -360,4 +357,8 @@ filterCSV ensures the "level" and "level*n*" columns are present - to the extent
 * shape
 
 While iThoughts can tolerate CSV files where trailing empty cells are suppressed, filterCSV includes them.
+
+## Test Files
+
+[tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
 
