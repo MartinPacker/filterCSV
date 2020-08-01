@@ -173,13 +173,14 @@ will merge any bullet whose text or note is 'A1' with its parent. The text of th
 
 ### Input Files
 
-Input files can be in one of five formats:
+Input files can be in one of six formats:
 
 * A CSV file that is already in a format supported by iThoughts' Import function.
 * A flat file where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at.
 * A Markdown nested list where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at. Only an asterisk (`*`) followed by a space is supported as a list item marker.
 * An OPML XML file - with or without `head` or `body` elements.
 * An XML file, including one with namespaces (both default and named).
+* A CSV file where the hierarchy is described by how many empty cells are to the left of the first cell with text in.
 
 #### Nesting Level Detection
 
@@ -219,6 +220,21 @@ This is good for the case where you want the tree repaired with a minimum of fus
 As an example, you might code
 
     filterCSV check repair < input.csv > output.csv
+
+#### Handling CSV files not in the format iThoughts expects
+
+You can import a CSV file and the tree structure is described by how many empty cells are to the left of the first cell with text in.
+
+If there is more than one cell in the line with text in the last such cell is used to form a note for the node.
+
+Here is an example.
+
+    "A"
+    ,"A1"
+    ,"A2","This is a note"
+    ,,"A2A"
+
+In the above node "A" is at level 0, nodes "A1" and "A2" are at level 1 - and "A2" has a note ("This is a note"), and "A2A" is at level 2.
 
 #### Spreading Out Level 0 (Root) Nodes
 
