@@ -222,7 +222,7 @@ As an example, you might code
 
 #### Spreading Out Level 0 (Root) Nodes
 
-If you import a CSV file without specifying positions in the file iThoughts will place all the Level 0 (root) nodes on top of each other. \
+If you import a CSV file into iThoughts without specifying positions in the file iThoughts will place all the Level 0 (root) nodes on top of each other. \
 This is probably not what you want. \
 filterCSV can spread out the Level 0 nodes - either horizontally or vertically.
 
@@ -321,3 +321,43 @@ In the above example the parameter `vertical` was used to align the root nodes n
 ## Test Files
 
 [tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
+
+### iThoughts CSV File Format
+
+The CSV format that iThoughts understands has a tree-like structure, within a table. As well as the tree of nodes, colour, position, node shape and other attributes of a node can be specified in the CSV file. To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
+
+The first row of the table contains headings iThoughts uses to understand the layout of the following rows. Each subsequent row represents a node.
+
+In summary, the iThoughts CSV file format has, at a minimum the following columns:
+
+* level
+* level0
+
+This would be for a mind map with only (isolated) top-level nodes. An example like this would be
+
+    level,level0
+    0,Text for this sole node
+
+The iThoughts CSV format is tabular.
+    
+But usually you want more than one level of nodes:
+
+    level,level0,level1,level2
+    0,Top-level node
+    1,,Next-level node
+    2,,,Leaf node at level 2
+    1,,Another intermediate-level node
+
+Here the structure is more apparent:
+
+* Each node has its level in the hierarchy (starting with 0) filled in in the "level" cell in the first row.
+* Each node's text is in the correct cell for the level. For example, the level 2 node's text is in the same column as the "level2" cell in the first row.
+
+filterCSV ensures the "level" and "level*n*" columns are present - to the extent needed by the tree. It also always adds the following columns, before the "level" column:
+
+* position
+* colour
+* shape
+
+While iThoughts can tolerate CSV files where trailing empty cells are suppressed, filterCSV includes them.
+
