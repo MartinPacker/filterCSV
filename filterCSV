@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.7"
-filterCSV_date = "31 July, 2020"
+filterCSV_level = "1.8"
+filterCSV_date = "3 August, 2020"
 
 
 class ParameterParser:
@@ -142,7 +142,7 @@ class TreeReader:
         """
         Add columns if they are not already present
         """
-        for column in "shape position note colour".split():
+        for column in "icons shape position note colour".split():
             if column not in csvRows[0]:
                 csvRows = self.injectColumn(csvRows, column)
 
@@ -160,6 +160,7 @@ class TreeReader:
             csvRows[0].index("note"),
             csvRows[0].index("shape"),
             csvRows[0].index("position"),
+            csvRows[0].index("icons"),
         )
 
     def ensureColumnsPopulated(self, csvRows):
@@ -408,6 +409,7 @@ class TreeReader:
         # levels
         csvRows.append(
             [
+                "icons",
                 "position",
                 "colour",
                 "shape",
@@ -437,7 +439,7 @@ class TreeReader:
         )
 
         if haveHead:
-            headCSVRow = ["", "", "", "0", titleText]
+            headCSVRow = ["", "", "", "", "0", titleText]
 
             csvRows.append(headCSVRow)
 
@@ -468,7 +470,7 @@ class TreeReader:
         csvRows = []
         nodeText = XMLNode.attrib["text"]
 
-        nodeRow = ["", "", "", str(level)]
+        nodeRow = ["", "", "", "", str(level)]
 
         levelBlankCells = [""] * (level)
         nodeRow += levelBlankCells
@@ -523,6 +525,7 @@ class TreeReader:
             # levels
             csvRows.append(
                 [
+                    "icons",
                     "position",
                     "colour",
                     "shape",
@@ -575,6 +578,7 @@ class TreeReader:
             # Is root node so create legend rows before it
             csvRows.append(
                 [
+                    "",
                     "{-300,-120}",
                     iThoughtsColours.getColour(2),
                     "rectangle",
@@ -583,10 +587,18 @@ class TreeReader:
                 ]
             )
             csvRows.append(
-                ["{-300,-85}", iThoughtsColours.getColour(8), "rectangle", "0", "value"]
+                [
+                    "",
+                    "{-300,-85}",
+                    iThoughtsColours.getColour(8),
+                    "rectangle",
+                    "0",
+                    "value",
+                ]
             )
             csvRows.append(
                 [
+                    "",
                     "{-300,-50}",
                     iThoughtsColours.getColour(6),
                     "rectangle",
@@ -597,6 +609,7 @@ class TreeReader:
 
             # Set position of root node to {0,0}
             elementCSVRow = [
+                "",
                 "{0,0}",
                 iThoughtsColours.getColour(2),
                 "rounded",
@@ -605,6 +618,7 @@ class TreeReader:
         else:
             # Set position to blank for all but the root node
             elementCSVRow = [
+                "",
                 "",
                 iThoughtsColours.getColour(2),
                 "rounded",
@@ -625,6 +639,7 @@ class TreeReader:
         for key, value in XMLNode.attrib.items():
             attributeCSVRow = [
                 "",
+                "",
                 iThoughtsColours.getColour(6),
                 "rounded",
                 f"{str(level + 1)}",
@@ -638,6 +653,7 @@ class TreeReader:
         if XMLNode.text is not None:
             if XMLNode.text.lstrip().rstrip() != "":
                 textCSVRow = [
+                    "",
                     "",
                     iThoughtsColours.getColour(8),
                     "rounded",
@@ -674,6 +690,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output1,
             ) = self.readiThoughtsCSVTree(inputFile)
 
@@ -688,6 +705,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output,
             )
         elif inputType == "CSV":
@@ -698,6 +716,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output1,
             ) = self.readNormalCSVTree(inputFile)
 
@@ -712,6 +731,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output,
             )
         elif inputType in ["markdown", "text"]:
@@ -722,6 +742,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output1,
             ) = self.readMarkdownOrTextTree(inputFile)
 
@@ -736,6 +757,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output,
             )
         elif inputType == "XML":
@@ -746,6 +768,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output1,
             ) = self.readXMLTree(inputFile)
 
@@ -766,6 +789,7 @@ class TreeReader:
                 noteColumn,
                 shapeColumn,
                 positionColumn,
+                iconsColumn,
                 output,
             )
 
@@ -776,7 +800,7 @@ class TreeWriter:
         CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
 
         # Write the header row
-        headerRow = ["colour", "note", "position", "shape", "level"]
+        headerRow = ["icons", "colour", "note", "position", "shape", "level"]
 
         # Establish how many levels to put out in the heading
         levels = csvTree.calculateMaximumLevel() + 1
@@ -923,6 +947,128 @@ class iThoughtsShapes:
         return self.shapeNumber
 
 
+class iThoughtsIcons:
+    # icons as understood by iThoughts
+    icons = (
+        "tick",
+        "tickbox",
+        "p0",
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "signal-flag-red",
+        "signal-flag-yellow",
+        "signal-flag-green",
+        "icon-signal-flag-black",
+        "icon-signal-flag-blue",
+        "icon-signal-flag-orange",
+        "icon-signal-flag-purple",
+        "icon-signal-flag-white",
+        "icon-signal-flag-checkered",
+        "icon-hat-black",
+        "icon-hat-blue",
+        "icon-hat-green",
+        "icon-hat-red",
+        "icon-hat-white",
+        "icon-hat-yellow",
+        "icon-calendar1",
+        "icon-calendar7",
+        "icon-calendar12",
+        "icon-calendar31",
+        "icon-calendar52",
+        "arrow-down-blue",
+        "arrow-left-blue",
+        "arrow-right-blue",
+        "arrow-up-blue",
+        "arrow-up-green",
+        "arrow-down-red",
+        "stop",
+        "prep",
+        "go",
+        "smiley_happy",
+        "icon-smiley-neutral",
+        "smiley_sad",
+        "icon-money",
+        "currency-dollar",
+        "currency-euro",
+        "currency-pound",
+        "currency-yen",
+        "icon-currency-won",
+        "icon-currency-yuan",
+        "hand-yellow-card",
+        "hand-red-card",
+        "hand-stop",
+        "hand-thumb-down",
+        "hand-thumb-up",
+        "question",
+        "icon-questionmark",
+        "icon-information",
+        "icon-exclamationmark",
+        "alert",
+        "icon-add",
+        "cross",
+        "sign-forbidden",
+        "sign-stop",
+        "idea",
+        "icon-camera",
+        "auction-hammer",
+        "bell",
+        "bomb",
+        "dynamite",
+        "fire",
+        "hourglass",
+        "target",
+        "view",
+        "icon-airplane",
+        "icon-alarmclock",
+        "icon-bug",
+        "icon-businessmen",
+        "icon-car",
+        "icon-clients",
+        "icon-cup",
+        "icon-data",
+        "icon-desktop",
+        "icon-earth",
+        "icon-flash",
+        "icon-gear",
+        "icon-heart",
+        "icon-key",
+        "icon-lock-open",
+        "icon-lock",
+        "icon-mail",
+        "icon-pin",
+        "icon-printer",
+        "icon-scales",
+        "icon-star",
+        "icom-telephone",
+        "icon-pencil",
+        "icon-alarm",
+        "icon-book",
+        "icon-certificate",
+        "icon-cloud",
+        "icon-compasses",
+        "icon-dice",
+        "icon-folder",
+        "icon-document",
+        "icon-male",
+        "icon-female",
+        "icon-newspaper",
+        "icon-paperclip",
+        "icon-presentation",
+        "icon-signpost",
+        "icon-step",
+    )
+
+    def __contains__(self, item):
+        return item in self.icons
+
+
 class iThoughtsSpread:
     horizontalPosition = 0
     horizontalIncrement = 0
@@ -952,15 +1098,16 @@ class iThoughtsSpread:
 
 
 class CSVTree:
-    def __init__(self, shape, colour, note, level, position, cell):
+    def __init__(self, icons, shape, colour, note, level, position, cell):
         """
-        >>> csv_tree = CSVTree("shape", "colour", "note", "level", 1, "cell")
+        >>> csv_tree = CSVTree("icons","shape", "colour", "note", "level", 1, "cell")
         >>> csv_tree.data["shape"]
         'shape'
         """
         self.toBeDeleted = False
         self.childNodes = []
         self.data = {
+            "icons": icons,
             "shape": shape,
             "colour": colour,
             "note": note,
@@ -1022,7 +1169,8 @@ class CSVTree:
         Common method for establishing if a node matches some criterion, usually a regex
         """
         return (
-            (re.search(criterion, self.data["shape"]) is not None)
+            (re.search(criterion, self.data["icons"]) is not None)
+            | (re.search(criterion, self.data["shape"]) is not None)
             | (re.search(criterion, self.data["colour"]) is not None)
             | (re.search(criterion, self.data["note"]) is not None)
             | (re.search(criterion, self.data["cell"]) is not None)
@@ -1076,6 +1224,14 @@ class CSVTree:
         elif action in iThoughtsShapes:
             # Is a shape
             self.data["shape"] = action
+        elif action in iThoughtsIcons:
+            # Is an icons
+            if self.data["icons"] == "":
+                self.data["icons"] = action
+            else:
+                self.data["icons"] += "," + action
+        elif action == "noicons":
+            self.data["icons"] = ""
         elif action.isdigit():
             # Attempt to parse as from the colour palette
             colourNumber = int(action)
@@ -1137,7 +1293,8 @@ class CSVTree:
         level = int(self.data["level"])
         if level > -1:
             line = [
-                self.data[key] for key in "colour note position shape level".split()
+                self.data[key]
+                for key in "icons colour note position shape level".split()
             ]
             line += [""] * int(self.data["level"])
             line.append(self.data["cell"])
@@ -1151,10 +1308,10 @@ class CSVTree:
 
     def getCounter(self, counter=None):
         """
-        >>> csv_tree = CSVTree("shape", "colour", "note", 1, 1, "cell")
+        >>> csv_tree = CSVTree("icons", "shape", "colour", "note", 1, 1, "cell")
         >>> csv_tree.getCounter()
         Counter({1: 1})
-        >>> _ = csv_tree.addChild(CSVTree("shape", "colour", "note", 2, 7, "cell"))
+        >>> _ = csv_tree.addChild(CSVTree("icons", "shape", "colour", "note", 2, 7, "cell"))
         >>> csv_tree.getCounter()
         Counter({1: 1, 2: 1})
         """
@@ -1867,8 +2024,8 @@ class CSVTree:
 
     def dump(self, actionsList=None) -> str:
         """
-        >>> csv_tree = CSVTree("", "", "", "-1", "", "")
-        >>> csv_child = CSVTree("square", "", "", "0", "", "Foo")
+        >>> csv_tree = CSVTree("", "", "", "", "-1", "", "")
+        >>> csv_child = CSVTree("", "square", "", "", "0", "", "Foo")
         >>> _ = csv_tree.addChild(csv_child)
         >>> print(csv_tree.dump([]).rstrip())
                                          -1
@@ -1961,6 +2118,8 @@ if __name__ == "__main__":
 
     iThoughtsSpread = iThoughtsSpread()
 
+    iThoughtsIcons = iThoughtsIcons()
+
     matchCriteria, actionsLists, output = ParameterParser().getParameters()
 
     writeOutput(output)
@@ -1973,6 +2132,7 @@ if __name__ == "__main__":
         noteColumn,
         shapeColumn,
         positionColumn,
+        iconsColumn,
         output,
     ) = TreeReader().createCSVArray()
 
@@ -1980,7 +2140,7 @@ if __name__ == "__main__":
 
     # Build the tree from the CSV array
     currentLevel = -1
-    csvTree = CSVTree("", "", "", currentLevel, "", "")
+    csvTree = CSVTree("", "", "", "", currentLevel, "", "")
     currentNode = csvTree
 
     for rowNumber, row in enumerate(csvRows[1:]):
@@ -1990,6 +2150,7 @@ if __name__ == "__main__":
         colour = row[colourColumn]
         note = row[noteColumn]
         position = row[positionColumn]
+        icons = row[iconsColumn]
 
         cellValue = row[levelColumn + level + 1]
 
@@ -1997,12 +2158,12 @@ if __name__ == "__main__":
             # New child of previous node
             currentLevel = level
             currentNode = currentNode.addChild(
-                CSVTree(shape, colour, note, level, position, cellValue)
+                CSVTree(icons, shape, colour, note, level, position, cellValue)
             )
         elif level == currentLevel:
             # New sibling of previous node
             currentNode = currentNode.parent.addChild(
-                CSVTree(shape, colour, note, level, position, cellValue)
+                CSVTree(icons, shape, colour, note, level, position, cellValue)
             )
         else:
             # Not a sibling or child of previous node
@@ -2015,7 +2176,7 @@ if __name__ == "__main__":
 
             # Add the new node - now we've found the parent to add it to
             currentNode = parentNode.addChild(
-                CSVTree(shape, colour, note, level, position, cellValue)
+                CSVTree(icons, shape, colour, note, level, position, cellValue)
             )
 
         currentNode.data["row"] = row

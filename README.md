@@ -10,12 +10,13 @@ The CSV format that iThoughts understands has a tree-like structure. As well as 
 
 filterCSV is a set of tools to automatically edit a CSV file in the form used in iThoughts. filterCSV is written in Python 3.6+. It has been tested on a Raspberry Pi and a machine running macOS.
 
-Based on matching regular expressions you can do things such as:
+Based on matching regular expressions, plus a few other criteria, you can do things for matching nodes such as:
 
 * Set colours for nodes
 * Change their shape
 * Delete them
 * Set their positions
+* Set icons for nodes
 
 You can check the structure of the input CSV file is good for importing into iThoughts.
 
@@ -68,6 +69,8 @@ Actions you can take include:
 * `keep`
 * Specify a shape
 * Specify a position
+* Specify an icon
+* Removing colour, shape, and icon specifications
 * Promote all subtrees at a certain level by 1 level
 * Computing basic statistics about the mind map
 
@@ -111,9 +114,29 @@ If you use `keep` in a filterCSV action you can't use anything else. For example
 
 Specify a shape as named by iThoughts.
 
-Currently the shapes are `auto`,`rectangle`,`square`,`rounded`,`pill`,
-`parallelogram`,`diamond`,`triangle`,`oval`,`circle`,
-`underline`,`none`,`square bracket`,`curved bracket`.
+Currently the shapes are
+
+    auto
+    rectangle
+    square
+    rounded
+    pill
+    parallelogram
+    diamond
+    triangle
+    oval
+    circle
+    underline
+    none
+    square bracket
+    curved bracket
+
+
+For example:
+
+    filterCSV '^CF' triangle < input.csv > output.csv
+
+would change the shape of any nodes which match the string "CF" (but having no characters preceding "CF") to a triangle.
 
 You can also specify `nextshape`, or `ns` and filterCSV will select the next shape in iThoughts' set of shapes. `sameshape` or `ss` can be used to specify the same shape again.
 
@@ -123,9 +146,27 @@ Positions are specified in the form `{x,y}` where the braces are necessary.
 
 At present setting the position only seems to work for Level 0 (root) nodes. You can have as many Level 0 nodes as you like.
 
-#### Removing Notes, Shapes, Colours, And Positions
+For example:
 
-If you specify `noshape`, `nocolour`, `nonote` or `noposition` the corresponding attribute is removed from matching nodes.
+    filterCSV 'A Root Node' '{100,200}' < input.csv > output.csv
+
+would move a level 0 whose name including the string 'A Root Node' to position (100,200).
+
+####  Icons
+
+You can add an icon to matching nodes using one of the names in the list under **iThoughts Icon Names** below.
+
+For example:
+
+    filterCSV 'Done' tick < input.csv > output.csv
+
+would add a tick icon to any nodes which match the string "Done".
+
+**Note:** A node can have more than one icon so specifying `tick` in the above example would not replace any other icon; It would add a tick icon to any existing ones.
+
+#### Removing Notes, Shapes, Colours, Positions, And Icons
+
+If you specify `noshape`, `nocolour`, `nonote`, `noposition`, or `noicons` the corresponding attribute is removed from matching nodes.
 
 Most usefully you could specify this with a match condition of `all` to reset an entire column. For example, `nonote` could clear all the notes from a mind map - to prepare it for exporting from iThoughts.
 
@@ -363,7 +404,7 @@ The CSV format that iThoughts understands has a tree-like structure, within a ta
 
 The first row of the table contains headings iThoughts uses to understand the layout of the following rows. Each subsequent row represents a node.
 
-In summary, the iThoughts CSV file format has, at a minimum the following columns:
+In summary, the iThoughts CSV file format has, at a minimum, the following columns:
 
 * level
 * level0
@@ -390,6 +431,7 @@ Here the structure is more apparent:
 
 filterCSV ensures the "level" and "level*n*" columns are present - to the extent needed by the tree. It also always adds the following columns, before the "level" column:
 
+* icons
 * position
 * colour
 * shape
@@ -399,4 +441,128 @@ While iThoughts can tolerate CSV files where trailing empty cells are suppressed
 ## Test Files
 
 [tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
+
+## iThoughts Icon Names
+
+The following icon names are defined by iThoughts. You can use them in two places
+
+* For matching nodes on - for example 'all nodes whose icon is "tick".'
+* For adding as an icon to a node - for example 'add the "p0" icon to all nodes that match "^A1$".'
+
+The names below are in the sequence they appear in the iThoughts icon palette.
+
+    tick
+    tickbox
+    p0
+    p1
+    p2
+    p3
+    p4
+    p5
+    p6
+    p7
+    p8
+    p9
+    signal-flag-red
+    signal-flag-yellow
+    signal-flag-green
+    icon-signal-flag-black
+    icon-signal-flag-blue
+    icon-signal-flag-orange
+    icon-signal-flag-purple
+    icon-signal-flag-white
+    icon-signal-flag-checkered
+    icon-hat-black
+    icon-hat-blue
+    icon-hat-green
+    icon-hat-red
+    icon-hat-white
+    icon-hat-yellow
+    icon-calendar1
+    icon-calendar7
+    icon-calendar12
+    icon-calendar31
+    icon-calendar52
+    arrow-down-blue
+    arrow-left-blue
+    arrow-right-blue
+    arrow-up-blue
+    arrow-up-green
+    arrow-down-red
+    stop
+    prep
+    go
+    smiley_happy
+    icon-smiley-neutral
+    smiley_sad
+    icon-money
+    currency-dollar
+    currency-euro
+    currency-pound
+    currency-yen
+    icon-currency-won
+    icon-currency-yuan
+    hand-yellow-card
+    hand-red-card
+    hand-stop
+    hand-thumb-down
+    hand-thumb-up
+    question
+    icon-questionmark
+    icon-information
+    icon-exclamationmark
+    alert
+    icon-add
+    cross
+    sign-forbidden
+    sign-stop
+    idea
+    icon-camera
+    auction-hammer
+    bell
+    bomb
+    dynamite
+    fire
+    hourglass
+    target
+    view
+    icon-airplane
+    icon-alarmclock
+    icon-bug
+    icon-businessmen
+    icon-car
+    icon-clients
+    icon-cup
+    icon-data
+    icon-desktop
+    icon-earth
+    icon-flash
+    icon-gear
+    icon-heart
+    icon-key
+    icon-lock-open
+    icon-lock
+    icon-mail
+    icon-pin
+    icon-printer
+    icon-scales
+    icon-star
+    icom-telephone
+    icon-pencil
+    icon-alarm
+    icon-book
+    icon-certificate
+    icon-cloud
+    icon-compasses
+    icon-dice
+    icon-folder
+    icon-document
+    icon-male
+    icon-female
+    icon-newspaper
+    icon-paperclip
+    icon-presentation
+    icon-signpost
+    icon-step
+
 
