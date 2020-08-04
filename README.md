@@ -247,7 +247,7 @@ Input files can be in one of six formats:
 
 #### Nesting Level Detection
 
-When parsing a non-CSV file the first line with leading white space (spaces and/or tabs) is used to detect the indentation scheme: Any white space on this line is used as a single indentation level marker. It is expected that all lines are indented in the same way.
+When parsing a Markdown or tab/space-indented non-CSV file the first line with leading white space (spaces and/or tabs) is used to detect the indentation scheme: Any white space on this line is used as a single indentation level marker. It is expected that all lines are indented in the same way.
 
 For example, if the second line starts with two spaces this is taken to indicate that every line will have zero, two, four, etc spaces:
 
@@ -255,6 +255,13 @@ For example, if the second line starts with two spaces this is taken to indicate
 * Two spaces denotes a level 1 node
 * Four spaces denotes a level 2 node
 * And so on
+
+If the file is detected to contain Markdown, leading dashes and asterisks followed by a single space are removed. (These are bulleted list markers in Markdown.) For example:
+
+    * A
+        * A1
+
+leads to the input file being interpreted as a level 0 node with text "A" and its child node with text "A1".
 
 For an XML input file the nesting level is in the data stream; Elements' children are at a deeper nesting level. \
 On import child nodes are created for the element's value (if it has one) and any attributes. \

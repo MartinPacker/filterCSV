@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.8"
-filterCSV_date = "3 August, 2020"
+filterCSV_date = "4 August, 2020"
 
 
 class ParameterParser:
@@ -122,7 +122,7 @@ class TreeReader:
                 return "CSV"
             elif firstChar == "<":
                 return "XML"
-            elif firstChar in ["#", "*"]:
+            elif firstChar in ["#", "*", "-"]:
                 return "markdown"
             else:
                 return "text"
@@ -366,7 +366,7 @@ class TreeReader:
 
             # Clean the line text to remove any list item marker
             cleanedLine = line.lstrip().rstrip()
-            if cleanedLine[0:2] == "* ":
+            if cleanedLine[0:2] in ["* ","- "]:
                 cleanedLine = cleanedLine[2:]
 
             # Add the cleaned line at the appropriate level
