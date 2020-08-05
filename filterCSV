@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.8"
-filterCSV_date = "4 August, 2020"
+filterCSV_date = "5 August, 2020"
 
 
 class ParameterParser:
@@ -142,7 +142,7 @@ class TreeReader:
         """
         Add columns if they are not already present
         """
-        for column in "icons shape position note colour".split():
+        for column in "priority progress icons shape position note colour".split():
             if column not in csvRows[0]:
                 csvRows = self.injectColumn(csvRows, column)
 
@@ -161,6 +161,8 @@ class TreeReader:
             csvRows[0].index("shape"),
             csvRows[0].index("position"),
             csvRows[0].index("icons"),
+            csvRows[0].index("progress"),
+            csvRows[0].index("priority"),
         )
 
     def ensureColumnsPopulated(self, csvRows):
@@ -358,6 +360,7 @@ class TreeReader:
                 level = 0
             else:
                 level = lineIndentLength // indentLength
+
             newRow.append(str(level))
 
             # Insert blank cells - according to level
@@ -366,7 +369,7 @@ class TreeReader:
 
             # Clean the line text to remove any list item marker
             cleanedLine = line.lstrip().rstrip()
-            if cleanedLine[0:2] in ["* ","- "]:
+            if cleanedLine[0:2] in ["* ", "- "]:
                 cleanedLine = cleanedLine[2:]
 
             # Add the cleaned line at the appropriate level
@@ -409,6 +412,8 @@ class TreeReader:
         # levels
         csvRows.append(
             [
+                "priority",
+                "progress",
                 "icons",
                 "position",
                 "colour",
@@ -439,7 +444,7 @@ class TreeReader:
         )
 
         if haveHead:
-            headCSVRow = ["", "", "", "", "0", titleText]
+            headCSVRow = ["", "", "", "", "", "", "0", titleText]
 
             csvRows.append(headCSVRow)
 
@@ -470,7 +475,7 @@ class TreeReader:
         csvRows = []
         nodeText = XMLNode.attrib["text"]
 
-        nodeRow = ["", "", "", "", str(level)]
+        nodeRow = ["", "", "", "", "", "", str(level)]
 
         levelBlankCells = [""] * (level)
         nodeRow += levelBlankCells
@@ -525,6 +530,8 @@ class TreeReader:
             # levels
             csvRows.append(
                 [
+                    "priority",
+                    "progress",
                     "icons",
                     "position",
                     "colour",
@@ -579,6 +586,8 @@ class TreeReader:
             csvRows.append(
                 [
                     "",
+                    "",
+                    "",
                     "{-300,-120}",
                     iThoughtsColours.getColour(2),
                     "rectangle",
@@ -589,6 +598,8 @@ class TreeReader:
             csvRows.append(
                 [
                     "",
+                    "",
+                    "",
                     "{-300,-85}",
                     iThoughtsColours.getColour(8),
                     "rectangle",
@@ -598,6 +609,8 @@ class TreeReader:
             )
             csvRows.append(
                 [
+                    "",
+                    "",
                     "",
                     "{-300,-50}",
                     iThoughtsColours.getColour(6),
@@ -610,6 +623,8 @@ class TreeReader:
             # Set position of root node to {0,0}
             elementCSVRow = [
                 "",
+                "",
+                "",
                 "{0,0}",
                 iThoughtsColours.getColour(2),
                 "rounded",
@@ -618,6 +633,8 @@ class TreeReader:
         else:
             # Set position to blank for all but the root node
             elementCSVRow = [
+                "",
+                "",
                 "",
                 "",
                 iThoughtsColours.getColour(2),
@@ -640,6 +657,8 @@ class TreeReader:
             attributeCSVRow = [
                 "",
                 "",
+                "",
+                "",
                 iThoughtsColours.getColour(6),
                 "rounded",
                 f"{str(level + 1)}",
@@ -653,6 +672,8 @@ class TreeReader:
         if XMLNode.text is not None:
             if XMLNode.text.lstrip().rstrip() != "":
                 textCSVRow = [
+                    "",
+                    "",
                     "",
                     "",
                     iThoughtsColours.getColour(8),
@@ -691,6 +712,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output1,
             ) = self.readiThoughtsCSVTree(inputFile)
 
@@ -706,6 +729,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output,
             )
         elif inputType == "CSV":
@@ -717,6 +742,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output1,
             ) = self.readNormalCSVTree(inputFile)
 
@@ -732,6 +759,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output,
             )
         elif inputType in ["markdown", "text"]:
@@ -743,6 +772,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output1,
             ) = self.readMarkdownOrTextTree(inputFile)
 
@@ -758,6 +789,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output,
             )
         elif inputType == "XML":
@@ -769,6 +802,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output1,
             ) = self.readXMLTree(inputFile)
 
@@ -790,6 +825,8 @@ class TreeReader:
                 shapeColumn,
                 positionColumn,
                 iconsColumn,
+                progressColumn,
+                priorityColumn,
                 output,
             )
 
@@ -800,7 +837,16 @@ class TreeWriter:
         CSVwriter = csv.writer(sys.stdout, quoting=csv.QUOTE_ALL)
 
         # Write the header row
-        headerRow = ["icons", "colour", "note", "position", "shape", "level"]
+        headerRow = [
+            "priority",
+            "progress",
+            "icons",
+            "colour",
+            "note",
+            "position",
+            "shape",
+            "level",
+        ]
 
         # Establish how many levels to put out in the heading
         levels = csvTree.calculateMaximumLevel() + 1
@@ -1098,15 +1144,19 @@ class iThoughtsSpread:
 
 
 class CSVTree:
-    def __init__(self, icons, shape, colour, note, level, position, cell):
+    def __init__(
+        self, priority, progress, icons, shape, colour, note, level, position, cell
+    ):
         """
-        >>> csv_tree = CSVTree("icons","shape", "colour", "note", "level", 1, "cell")
+        >>> csv_tree = CSVTree("priority", "progress", "icons","shape", "colour", "note", "level", 1, "cell")
         >>> csv_tree.data["shape"]
         'shape'
         """
         self.toBeDeleted = False
         self.childNodes = []
         self.data = {
+            "priority": priority,
+            "progress": progress,
             "icons": icons,
             "shape": shape,
             "colour": colour,
@@ -1224,6 +1274,42 @@ class CSVTree:
         elif action in iThoughtsShapes:
             # Is a shape
             self.data["shape"] = action
+        elif action[0:9] == "priority:":
+            if action[9:].isdigit():
+                self.data["priority"] = action[9:]
+            else:
+                sys.stderr.write(
+                    f"Erroneous priority value {action[9:]} "
+                    f"(Pattern was: '{criterion.pattern}')." + "\n"
+                )
+        elif action[0:5] == "prio:":
+            if action[5].isdigit():
+                self.data["priority"] = action[5]
+            else:
+                sys.stderr.write(
+                    f"Erroneous priority value {action[5]} "
+                    f"(Pattern was: '{criterion.pattern}')." + "\n"
+                )
+        elif action in ["noprio", "nopriority"]:
+            self.data["priority"] = ""
+        elif action[0:9] == "progress:":
+            if action[9:].isdigit():
+                self.data["progress"] = action[9:]
+            else:
+                sys.stderr.write(
+                    f"Erroneous progress value {action[9:]} "
+                    f"(Pattern was: '{criterion.pattern}')." + "\n"
+                )
+        elif action[0:5] == "prog:":
+            if action[5].isdigit():
+                self.data["progress"] = action[5]
+            else:
+                sys.stderr.write(
+                    f"Erroneous progress value {action[5]} "
+                    f"(Pattern was: '{criterion.pattern}')." + "\n"
+                )
+        elif action in ["noprog", "noprogress"]:
+            self.data["progress"] = ""
         elif action in iThoughtsIcons:
             # Is an icons
             if self.data["icons"] == "":
@@ -1273,6 +1359,50 @@ class CSVTree:
                     else:
                         # The level specified wasn't an integer
                         print(f"Bad level string '{potentialLevelString}")
+                elif criterion.startswith("@priority:") | criterion.startswith(
+                    "@prio:"
+                ):
+                    if criterion.startswith("@priority:"):
+                        potentialPriorityString = criterion[10:].rstrip()
+                    else:
+                        potentialPriorityString = criterion[6:].rstrip()
+                    if potentialPriorityString.isdigit():
+                        wantedPriority = int(potentialPriorityString)
+                        if self.data["priority"] == potentialPriorityString:
+                            # We have a node with the right priority
+                            for action in actionsList:
+                                propagateToChildren = self.applyAction(
+                                    criterion, action, propagateToChildren
+                                )
+                elif criterion in ["@nopriority", "@noprio"]:
+                    if self.data["priority"] == "":
+                        # We have a node with no priority
+                        for action in actionsList:
+                            propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+                elif criterion.startswith("@progress:") | criterion.startswith(
+                    "@prog:"
+                ):
+                    if criterion.startswith("@progress:"):
+                        potentialProgressString = criterion[10:].rstrip()
+                    else:
+                        potentialProgressString = criterion[6:].rstrip()
+                    if potentialProgressString.isdigit():
+                        wantedProgress = int(potentialProgressString)
+                        if self.data["progress"] == potentialProgressString:
+                            # We have a node with the right progress
+                            for action in actionsList:
+                                propagateToChildren = self.applyAction(
+                                    criterion, action, propagateToChildren
+                                )
+                elif criterion in ["@noprogress", "@noprog"]:
+                    if self.data["progress"] == "":
+                        # We have a node with no progress
+                        for action in actionsList:
+                            propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
                 else:
                     # Criterion is a regular expression rather than a string
                     print(f"Bad criterion: '{criterion}'.")
@@ -1294,7 +1424,7 @@ class CSVTree:
         if level > -1:
             line = [
                 self.data[key]
-                for key in "icons colour note position shape level".split()
+                for key in "priority progress icons colour note position shape level".split()
             ]
             line += [""] * int(self.data["level"])
             line.append(self.data["cell"])
@@ -2133,6 +2263,8 @@ if __name__ == "__main__":
         shapeColumn,
         positionColumn,
         iconsColumn,
+        progressColumn,
+        priorityColumn,
         output,
     ) = TreeReader().createCSVArray()
 
@@ -2140,7 +2272,7 @@ if __name__ == "__main__":
 
     # Build the tree from the CSV array
     currentLevel = -1
-    csvTree = CSVTree("", "", "", "", currentLevel, "", "")
+    csvTree = CSVTree("", "", "", "", "", "", currentLevel, "", "")
     currentNode = csvTree
 
     for rowNumber, row in enumerate(csvRows[1:]):
@@ -2151,6 +2283,8 @@ if __name__ == "__main__":
         note = row[noteColumn]
         position = row[positionColumn]
         icons = row[iconsColumn]
+        progress = row[progressColumn]
+        priority = row[priorityColumn]
 
         cellValue = row[levelColumn + level + 1]
 
@@ -2158,12 +2292,32 @@ if __name__ == "__main__":
             # New child of previous node
             currentLevel = level
             currentNode = currentNode.addChild(
-                CSVTree(icons, shape, colour, note, level, position, cellValue)
+                CSVTree(
+                    priority,
+                    progress,
+                    icons,
+                    shape,
+                    colour,
+                    note,
+                    level,
+                    position,
+                    cellValue,
+                )
             )
         elif level == currentLevel:
             # New sibling of previous node
             currentNode = currentNode.parent.addChild(
-                CSVTree(icons, shape, colour, note, level, position, cellValue)
+                CSVTree(
+                    priority,
+                    progress,
+                    icons,
+                    shape,
+                    colour,
+                    note,
+                    level,
+                    position,
+                    cellValue,
+                )
             )
         else:
             # Not a sibling or child of previous node
@@ -2176,7 +2330,17 @@ if __name__ == "__main__":
 
             # Add the new node - now we've found the parent to add it to
             currentNode = parentNode.addChild(
-                CSVTree(icons, shape, colour, note, level, position, cellValue)
+                CSVTree(
+                    priority,
+                    progress,
+                    icons,
+                    shape,
+                    colour,
+                    note,
+                    level,
+                    position,
+                    cellValue,
+                )
             )
 
         currentNode.data["row"] = row
