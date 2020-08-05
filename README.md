@@ -4,7 +4,12 @@ iThoughts is a third-party application for creating and managing mind maps. It r
 
 You can create a mind map either in the application itself or by importing files in a number of other formats. The most complete format is Comma-Separated Value (CSV). Being a text format, CSV can be programmatically created in a number of programming languages, such as Python.
 
-The CSV format that iThoughts understands has a tree-like structure. As well as the tree of nodes, colour, position, node shape and other attributes of a node can be specified in the CSV file. To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
+The CSV format that iThoughts understands has a tree-like structure. A tree consists of nodes, which contain data as well as potentially child nodes. A node with no parent is called a root node. A node with no children is called a leaf node.
+
+There can be multiple root nodes - and hence multiple trees - in an iThoughts CSV file. In which case it's better to call the ensemble a forest of trees.
+
+As well as the nodes' tree structure, an iThoughts' CSV file can store for each node its colour, its position, its shape and other attributes.
+To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
 
 ## About filterCSV
 
@@ -31,11 +36,21 @@ filterCSV reads from stdin and writes to stdout, with messages (including error 
 
     filterCSV '^A1$' 'triangle' < input.csv > output.csv
 
+It's designed for use in a pipeline, where the input of one program can be the output of another.
 
-Command line parameters are pairs of:
+Do not specify the input and output files as command parameters. Instead
+
+* Code the input file as an input stream using `<`.
+* Code the output file as an output stream using `>`.
+* You can code stderr as an output stream using `2>` or let it default to the terminal session.
+
+Command line parameters instruct filterCSV on how to process the parse input file to create the output file. The parameters are specified in pairs.
+Each pair consists of:
 
 1. A specifier. This is a regular expression to match. (A special value `all` matches any value)
 1. An action or sequence of actions. 
+
+In the case where no action is expected you can code anything you like for the second parameter. A useful suggestion would be to code `.` for it.
 
 ### Specifiers
 
@@ -45,6 +60,8 @@ Specifiers are used to specify which nodes to operate on and can be in one of th
 * A special value of `all`, matching all nodes.
 * A special value of `none`, matching no nodes.
 * A level specifier of the form `@level:n` - where `n` is an integer, referring to the level number.
+* A priority specifier of the form `@priority:n` - where `n` is an integer between 1 and 5. You can use `@prio:n` for short. You can use `@nopriority` or `@noprio` to match nodes where the priority has not been set.
+* A progress specifier of the form ``@progress:n` - where `n` is an integer between 0 and 100, representing percent complete. You can use `@prog:n` for short. You can use `@noprogress` or `@noprog` to match nodes where the progress has not been set.
 
 **Notes:**
 
@@ -52,6 +69,8 @@ If you want to match a cell's text exactly you can code something like `^A1$` wh
 
 In the `level:n` form of the specifier the level of a node is taken from how it was read in - though that could be modified by `check repairsubtree`. \
 If you're not sure the levels are properly numbered you should run `check repairsubtree` first. For example
+
+For both `@priority:n` and `@progress:n` an empty value in the node's attribute means it's not been set.
 
 ```
 filterCSV < input_file.csv > output_file.csv \
@@ -164,9 +183,31 @@ would add a tick icon to any nodes which match the string "Done".
 
 **Note:** A node can have more than one icon so specifying `tick` in the above example would not replace any other icon; It would add a tick icon to any existing ones.
 
-#### Removing Notes, Shapes, Colours, Positions, And Icons
+#### Priority
+
+You can set a node's priority with `priority:n` or `prio:n`. You can unset it with `nopriority` or `noprio`.
+
+For example:
+
+    filterCSV 'Unimportant' prio:5 < input.csv > output.csv
+
+will set the priority for any node matching "Unimportant" to 5.
+
+####  Progress
+
+You can set a node's progress with `progress:n` or `prog:n`. You can unset it with `noprogress` or `noprog`.
+
+For example:
+
+    filterCSV 'Got nowhere' prog:0 < input.csv > output.csv
+
+will set the progress for any node matching "Got nowhere" to 0%.
+
+#### Removing Notes, Shapes, Colours, Positions, Icons, Progress, And Priority
 
 If you specify `noshape`, `nocolour`, `nonote`, `noposition`, or `noicons` the corresponding attribute is removed from matching nodes.
+
+Similarly priority or progress can be unset with `nopriority`, `noprio`, `noprogress` or `noprog`.
 
 Most usefully you could specify this with a match condition of `all` to reset an entire column. For example, `nonote` could clear all the notes from a mind map - to prepare it for exporting from iThoughts.
 
@@ -438,10 +479,17 @@ Here the structure is more apparent:
 
 filterCSV ensures the "level" and "level*n*" columns are present - to the extent needed by the tree. It also always adds the following columns, before the "level" column:
 
+* priority
+* progress
 * icons
 * position
 * colour
 * shape
+
+These extra columns are filled in to allow filterCSV to do interesting things with the attributes they represent, such as
+
+* Filtering on attributes - such as "Priority 1"
+* Setting attributes - such as setting the shape to a triangle.
 
 While iThoughts can tolerate CSV files where trailing empty cells are suppressed, filterCSV includes them.
 
