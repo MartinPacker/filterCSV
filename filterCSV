@@ -33,8 +33,8 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.8"
-filterCSV_date = "5 August, 2020"
+filterCSV_level = "1.9"
+filterCSV_date = "12 August, 2020"
 
 
 class ParameterParser:
@@ -2242,6 +2242,49 @@ def writeOutput(printLines):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        # No parameters so print help information and quit
+        title=f"\nfilterCSV {filterCSV_level} - {filterCSV_date}"
+        print(title)
+        print("-" * len(title))
+        print("""
+filterCSV is a tool for manipulating files for import into and export
+from the iThoughtsX (Mac) and iThoughts (iOS / iPad OS app).
+
+It can import and export other types of file as well. For details see
+the README.md file on GitHub. This file is here:
+
+    https://github.com/MartinPacker/filterCSV/blob/master/README.md
+
+The filterCSV project is Open Sourced under the MIT licence. Its URL
+is here:
+
+    https://github.com/MartinPacker/filterCSV
+
+In basic use filterCSV expects the following streams:
+
+    stdin  (0) - The source file to be processed.
+
+    stdout (1) - The resulting processed file.
+
+    stderr (2) - Informational and error messages.
+
+filterCSV also expects some commands. These are pairs of parameters.
+Here is an example:
+
+    filterCSV < input.csv > output.csv 'A1' 'triangle FF0000'
+
+The first parameter specifies that any node whose text contains "A1"
+is to be processed according to the second parameter.
+
+The second parameter, which is enclosed in quotes because it contains
+spaces, says to make the node's shape be a triangle and to colour it
+red. ("FF0000" is the RGB value for red.)
+
+For much more information see the README.md - which serves as the
+manual.
+        """)
+        sys.exit()
     iThoughtsColours = iThoughtsColours()
 
     iThoughtsShapes = iThoughtsShapes()
