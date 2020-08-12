@@ -52,6 +52,8 @@ Each pair consists of:
 
 In the case where no action is expected you can code anything you like for the second parameter. A useful suggestion would be to code `.` for it.
 
+You can get some basic help by invoking filterCSV with no parameters. That help points to this README and the project on GitHub.
+
 ### Specifiers
 
 Specifiers are used to specify which nodes to operate on and can be in one of the following forms.
