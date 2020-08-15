@@ -35,7 +35,7 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.9"
-filterCSV_date = "14 August, 2020"
+filterCSV_date = "15 August, 2020"
 
 
 class streamHandler:
