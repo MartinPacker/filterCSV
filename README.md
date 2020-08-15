@@ -11,6 +11,43 @@ There can be multiple root nodes - and hence multiple trees - in an iThoughts CS
 As well as the nodes' tree structure, an iThoughts' CSV file can store for each node its colour, its position, its shape and other attributes.
 To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
 
+
+* [About filterCSV](#aboutfiltercsv)
+* [Using filterCSV](#usingfiltercsv)
+    * [Specifiers](#specifiers)
+    * [Actions](#actions)
+        * [Colour Numbers](#colournumbers)
+        * [Colour RGB Values](#colourrgbvalues)
+        * [Delete](#delete)
+        * [Keep](#keep)
+        * [Shapes](#shapes)
+        * [Positions](#positions)
+        * [Icons](#icons)
+        * [Priority](#priority)
+        * [Progress](#progress)
+        * [Removing Notes, Shapes, Colours, Positions, Icons, Progress, And Priority](#removingnotesshapescolourspositionsiconsprogressandpriority)
+        * [Eliminating A Level](#eliminatingalevel)
+        * [Computing Statistics About A Mind Map](#computingstatisticsaboutamindmap)
+        * [Merging Nodes Into Their Parent Node](#mergingnodesintotheirparentnode)
+        * [Sorting Child Nodes](#sortingchildnodes)
+        * [Reversing The Order Of Child Nodes](#reversingtheorderofchildnodes)
+    * [Input Files](#inputfiles)
+        * [Nesting Level Detection](#nestingleveldetection)
+        * [Checking](#checking)
+        * [Handling CSV Files Not In The Format iThoughts Expects](#handlingcsvfilesnotintheformatithoughtsexpects)
+        * [Spreading Out Level 0 (Root) Nodes](#spreadingoutlevel0rootnodes)
+    * [Output Formats](#outputformats)
+        * [Markdown Output](#markdownoutput)
+        * [HTML Output](#htmloutput)
+        * [Freemind And OPML XML Output](#freemindandopmlxmloutput)
+        * [GraphViz .dot Format](#graphviz.dotformat)
+        * [iThoughts CSV File Format](#ithoughtscsvfileformat)
+    * [Command Files](#commandfiles)
+    * [Test Files](#testfiles)
+    * [iThoughts Shape Names](#ithoughtsshapenames)
+    * [iThoughts Icon Names](#ithoughtsiconnames)
+  
+
 ## About filterCSV
 
 filterCSV is a set of tools to automatically edit a CSV file in the form used in iThoughts. filterCSV is written in Python 3.6+. It has been tested on a Raspberry Pi and a machine running macOS.
@@ -32,7 +69,7 @@ It might or might not be used for mapping your mind.
 
 ## Using filterCSV
 
-filterCSV reads from stdin and writes to stdout, with messages (including error messages) to stderr. For example:
+filterCSV reads from stdin and writes to stdout, with messages (including error messages) written to stderr. For example:
 
     filterCSV '^A1$' 'triangle' < input.csv > output.csv
 
@@ -44,13 +81,15 @@ Do not specify the input and output files as command parameters. Instead
 * Code the output file as an output stream using `>`.
 * You can code stderr as an output stream using `2>` or let it default to the terminal session.
 
-Command line parameters instruct filterCSV on how to process the parse input file to create the output file. The parameters are specified in pairs.
+Command line parameters instruct filterCSV on how to process the parsed input file to create the output file. The parameters are specified in pairs.
 Each pair consists of:
 
-1. A specifier. This is a regular expression to match. (A special value `all` matches any value)
+1. A specifier. This is a regular expression to match. (A special value `all` matches any value.)
 1. An action or sequence of actions. 
 
 In the case where no action is expected you can code anything you like for the second parameter. A useful suggestion would be to code `.` for it.
+
+Instead of using command line parameters you can code the commands in a file read in from Stream 3. See [Command Files](#commandfiles) for more information on this, potentially more flexible, way of controlling filterCSV.
 
 You can get some basic help by invoking filterCSV with no parameters. That help points to this README and the project on GitHub.
 
@@ -133,24 +172,7 @@ If you use `keep` in a filterCSV action you can't use anything else. For example
 
 #### Shapes
 
-Specify a shape as named by iThoughts.
-
-Currently the shapes are
-
-    auto
-    rectangle
-    square
-    rounded
-    pill
-    parallelogram
-    diamond
-    triangle
-    oval
-    circle
-    underline
-    none
-    square bracket
-    curved bracket
+You can specify a shape for matching nodes using one of the names in the list in [iThoughts Shape Names](#ithoughtsshapenames).
 
 
 For example:
@@ -175,7 +197,7 @@ would move a level 0 whose name including the string 'A Root Node' to position (
 
 ####  Icons
 
-You can add an icon to matching nodes using one of the names in the list under **iThoughts Icon Names** below.
+You can add an icon to matching nodes using one of the names in the list in [iThoughts Icon Names](#ithoughtsiconnames).
 
 For example:
 
@@ -334,7 +356,7 @@ As an example, you might code
 
     filterCSV check repair < input.csv > output.csv
 
-#### Handling CSV files not in the format iThoughts expects
+#### Handling CSV Files Not In The Format iThoughts Expects
 
 You can import a CSV file and the tree structure is described by how many empty cells are to the left of the first cell with text in.
 
@@ -417,7 +439,7 @@ filterCSV can output to OPML XML format, but support for notes and colours by ot
 
     filterCSV xml opml < myfile.csv > myfile.opml
 
-#### GraphViz .dot format
+#### GraphViz .dot Format
 
 filterCSV can export in a format compatible with the GraphViz .dot language. It creates a digraph (directed graph). Here is a sample output file:
 
@@ -495,9 +517,51 @@ These extra columns are filled in to allow filterCSV to do interesting things wi
 
 While iThoughts can tolerate CSV files where trailing empty cells are suppressed, filterCSV includes them.
 
+## Command Files
+
+Instead of specifying commands as pairs of parameters on the command line you can use Stream 3 to point to a file containing the commands.
+
+For example:
+
+    filterCSV < input.csv > output.csv 3< commands.txt
+
+Here the `3< commands.txt` specifies the commands will be read in from the file commands.txt.
+
+The format is very similar to the command line format for specifiers and actions. For example:
+
+    '^A1$' 'triangle FF0000' // A1 nodes get the red triangle treatment
+
+In the above any characters before the first space are treated as the specifier. They do not have to be in quotation marks.
+Any characters after the first space are treated as the actions - up to just before the double slash.
+
+**Note:** The specifier and the actions must be on the same line.
+
+In the example above a comment was introduced by `//`. Any characters after this on the same line are treated as a comment and ignored. \
+You can comment out a whole line with `//` - which might be useful for exploration purposes. Blank lines are also ignored. \
+Comments aren't feasible with command line parameters - so using a command file like this might be preferred.
+
 ## Test Files
 
 [tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
+
+## iThoughts Shape Names
+
+The following shape names are defined by iThoughts.
+
+    auto
+    rectangle
+    square
+    rounded
+    pill
+    parallelogram
+    diamond
+    triangle
+    oval
+    circle
+    underline
+    none
+    square bracket
+    curved bracket
 
 ## iThoughts Icon Names
 

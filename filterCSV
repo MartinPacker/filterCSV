@@ -27,6 +27,7 @@ Actions can be:
 import csv
 import re
 import sys
+import os
 from collections import Counter
 from string import hexdigits
 import xml.etree.ElementTree as ElementTree
@@ -34,43 +35,100 @@ import xml.etree.ElementTree as ElementTree
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.9"
-filterCSV_date = "12 August, 2020"
+filterCSV_date = "14 August, 2020"
+
+
+class streamHandler:
+    def streamIsAvailable(self, streamNumber):
+        try:
+            os.stat(streamNumber)
+            return True
+        except:
+            return False
 
 
 class ParameterParser:
+    def preprocessCriterion(self, matchCriterion):
+        if matchCriterion == "all":
+            # This regex is guaranteed to match anything
+            return re.compile(".*")
+        elif matchCriterion == "none":
+            # This regex is guaranteed to match nothing - and to fail quickly
+            return re.compile("a^")
+        elif matchCriterion.startswith("@"):
+            # Pass through a level match criterion
+            return matchCriterion
+        else:
+            # Some other criterion
+            return re.compile(matchCriterion)
+
     def getParameters(self):
         matchCriteria = []
         actionsLists = []
 
         output = []
 
-        # Heading for parameters display
         output.append("\nfilterCSV " + filterCSV_level + " (" + filterCSV_date + ")\n")
+
+        # figure out whether parameters are on command line or in a file
+        useParameterFile = streamHandler.streamIsAvailable(3)
+        if useParameterFile:
+            output.append("Reading parameters from stream 3.\n")
+            commandFile = open(3, "r")
+            commands = commandFile.readlines()
+        else:
+            output.append("Reading parameters as command line arguments.\n")
+
+        # Heading for parameters display
         output.append("Criterion".ljust(40, " ") + " Actions")
         output.append("---------".ljust(40, " ") + " -------")
 
-        # Read in pairs of parameters from command line
-        parmNumber = 1
-        for parmPair in range((len(sys.argv) - 1) // 2):
-            # Handle match criterion
-            matchCriterion = sys.argv[parmNumber]
-            if matchCriterion == "all":
-                # This regex is guaranteed to match anything
-                matchCriteria.append(re.compile(".*"))
-            elif matchCriterion == "none":
-                # This regex is guaranteed to match nothing - and to fail quickly
-                matchCriteria.append(re.compile("a^"))
-            elif matchCriterion.startswith("@"):
-                # Pass through a level match criterion
-                matchCriteria.append(matchCriterion)
-            else:
-                # Some other criterion
-                matchCriteria.append(re.compile(matchCriterion))
+        # Read in pairs of parameters from command line or file
+        parmPairs = []
 
-            parmNumber += 1
+        if useParameterFile:
+            # Use parameter file
+            for parmLine in commands:
+                # Process a line as a criterion / actions pair
+
+                splitAtComment = parmLine.rstrip().split("//", 1)
+                substantialLine = splitAtComment[0]
+                if substantialLine != "":
+                    parmPair = substantialLine.split(" ", 1)
+
+                    matchCriterion = parmPair[0]
+                    if matchCriterion[0:1] == "'":
+                        matchCriterion = matchCriterion[1:]
+                    if matchCriterion[-1] == "'":
+                        matchCriterion = matchCriterion[:-1]
+
+                    actionsString = parmPair[1].rstrip()
+                    if actionsString[0:1] == "'":
+                        actionsString = actionsString[1:]
+                    if actionsString[-1] == "'":
+                        actionsString = actionsString[:-1]
+                    actionsString = actionsString.replace(" ", ",")
+
+                    parmPair = [matchCriterion, actionsString]
+                    parmPairs.append(parmPair)
+
+        else:
+            # Use command line parameters
+            parmNumber = 1
+            for parmPair in range((len(sys.argv) - 1) // 2):
+                matchCriterion = sys.argv[parmNumber]
+                actionsString = sys.argv[parmNumber + 1].lower().replace(" ", ",")
+
+                parmPairs.append([matchCriterion, actionsString])
+                parmNumber += 1
+
+        for parmPair in parmPairs:
+            # Handle match criterion
+            matchCriterion = parmPair[0]
+            matchCriteria.append(self.preprocessCriterion(matchCriterion))
 
             # Handle the actions that go with this match criterion
-            actionsString = sys.argv[parmNumber].lower().replace(" ", ",")
+            actionsString = parmPair[1]
             actionList = actionsString.split(",")
 
             # For nextcolour/samecolour and nextshape/sameshape etc rewrite action as
@@ -96,8 +154,6 @@ class ParameterParser:
 
             # Add actions list to list of actions lists
             actionsLists.append(actionList)
-
-            parmNumber += 1
 
             output.append(matchCriterion.ljust(40, " ") + " " + actionsString)
 
@@ -2244,10 +2300,11 @@ def writeOutput(printLines):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         # No parameters so print help information and quit
-        title=f"\nfilterCSV {filterCSV_level} - {filterCSV_date}"
+        title = f"\nfilterCSV {filterCSV_level} - {filterCSV_date}"
         print(title)
-        print("-" * len(title))
-        print("""
+        print("-" * (len(title) - 1))
+        print(
+            """
 filterCSV is a tool for manipulating files for import into and export
 from the iThoughtsX (Mac) and iThoughts (iOS / iPad OS app).
 
@@ -2283,7 +2340,8 @@ red. ("FF0000" is the RGB value for red.)
 
 For much more information see the README.md - which serves as the
 manual.
-        """)
+        """
+        )
         sys.exit()
     iThoughtsColours = iThoughtsColours()
 
@@ -2292,6 +2350,8 @@ manual.
     iThoughtsSpread = iThoughtsSpread()
 
     iThoughtsIcons = iThoughtsIcons()
+
+    streamHandler = streamHandler()
 
     matchCriteria, actionsLists, output = ParameterParser().getParameters()
 
