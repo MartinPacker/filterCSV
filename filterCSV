@@ -34,8 +34,10 @@ import xml.etree.ElementTree as ElementTree
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.9"
-filterCSV_date = "15 August, 2020"
+filterCSV_level = "1.10"
+filterCSV_date = "16 August, 2020"
+
+inputIndentCharacters = ""
 
 
 class streamHandler:
@@ -315,6 +317,7 @@ class TreeReader:
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
     def readMarkdownOrTextTree(self, inputFile):
+        global inputIndentCharacters
         output = []
 
         # Build array of rows
@@ -330,6 +333,7 @@ class TreeReader:
 
                 # Save the indentation whitespace
                 indentCharacters = line[0:indentLength]
+                inputIndentCharacters = indentCharacters
 
                 # Print the detected indentation - so user can debug
                 output.append(
@@ -1559,6 +1563,36 @@ class CSVTree:
         for childNode in self.childNodes:
             childNode.repairSubtreeLevels(parentLevel + 1)
 
+    def exportToIndentedText(self, actionsList):
+        indentationType = actionsList[0].lower()
+        if indentationType == "tab":
+            indentationCharacters = "\t"
+        if indentationType == "original":
+            indentationCharacters = inputIndentCharacters
+        elif indentationType == ".":
+            indentationCharacters = "  "
+        elif indentationType.startswith("space:"):
+            spaceCount = int(indentationType[6:])
+            indentationCharacters = " " * spaceCount
+        else:
+            indentationCharacters = indentationType
+
+        return self._exportToIndentedText(indentationCharacters)
+
+    def _exportToIndentedText(self, indentationCharacters):
+        output = []
+
+        level = int(self.data["level"])
+
+        if level > -1:
+            indentationText = indentationCharacters * level
+            output.append(indentationText + self.data["cell"])
+
+        for childNode in self.childNodes:
+            output += childNode._exportToIndentedText(indentationCharacters)
+
+        return output
+
     def exportToMarkdown(self, actionsList):
         # Get the number of heading levels to allow before going to nested bulleted
         # lists
@@ -2467,6 +2501,7 @@ manual.
                 "hspread": csvTree.doHorizontalSpread,
                 "html": csvTree.exportToHTML,
                 "markdown": csvTree.exportToMarkdown,
+                "indented": csvTree.exportToIndentedText,
                 "promote": csvTree.promoteLevel,
                 "stats": csvTree.writeStatistics,
                 "vspread": csvTree.doVerticalSpread,

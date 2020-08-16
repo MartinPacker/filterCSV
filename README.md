@@ -41,7 +41,8 @@ To a very limited extent the format is documented [here](https://www.toketaware.
         * [HTML Output](#htmloutput)
         * [Freemind And OPML XML Output](#freemindandopmlxmloutput)
         * [GraphViz .dot Format](#graphviz.dotformat)
-        * [iThoughts CSV File Format](#ithoughtscsvfileformat)
+        * [Indented Text](#indentedtext)
+    * [iThoughts CSV File Format](#ithoughtscsvfileformat)
     * [Command Files](#commandfiles)
     * [Test Files](#testfiles)
     * [iThoughts Shape Names](#ithoughtsshapenames)
@@ -469,6 +470,32 @@ You can use the dot command (part of GraphViz) to turn this into a PNG graphic:
     dot -Tpng test.dot > test.png
     
 In the above example the parameter `vertical` was used to align the root nodes next to each other, with descendants down the page. \ If you specify any other value, for example 'horizontal' or '.' the alignment will be horizontal. (You can use `v` for short, for `vertical`.)
+
+#### Indented Text
+
+You can write out the data as a text file where indentation is used to denote levels in the tree hierarchy. \
+Use the `indented` command to write out the text in this format. \
+There are numerous options for how to indent the text:
+
+* Code `original` to use the same indentation characters as on input. (This will only work if you read in an indented-text file; Otherwise the indentation will be an empty string.)
+
+* Code `tab` to use the tab character to indent.
+
+* Code `space:n` to use n spaces for each indentation level.
+
+* Code `.` as a shorthand to indent using two spaces for each level.
+
+* Code any other characters to use them for indentation.
+
+Here are two examples of usage:
+
+    filterCSV < input.csv > output.txt indented space:4
+
+will write out a file where four space characters are used for each level of indentation.
+
+    filterCSV < input.csv > output.txt indented "--"
+
+will write out a file where two dashes are used for each level of indentation.
 
 ### iThoughts CSV File Format
 
