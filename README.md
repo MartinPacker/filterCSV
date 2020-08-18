@@ -11,7 +11,7 @@ There can be multiple root nodes - and hence multiple trees - in an iThoughts CS
 As well as the nodes' tree structure, an iThoughts' CSV file can store for each node its colour, its position, its shape and other attributes.
 To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
 
-
+* [An Introduction To The iThoughts CSV File Format](#anintroductiontotheithoughtscsvfileformat)
 * [About filterCSV](#aboutfiltercsv)
 * [Using filterCSV](#usingfiltercsv)
     * [Specifiers](#specifiers)
@@ -47,7 +47,32 @@ To a very limited extent the format is documented [here](https://www.toketaware.
     * [Test Files](#testfiles)
     * [iThoughts Shape Names](#ithoughtsshapenames)
     * [iThoughts Icon Names](#ithoughtsiconnames)
-  
+
+## An Introduction To The iThoughts CSV File Format
+
+Here is a sample CSV file in the format required by iThoughts:
+
+    "colour","shape","level","level0","level1","level2"
+    00FFFF,,0,"A"
+    ,triangle,1,,A1
+    ,square,1,,A2
+    FF0000,square,2,,,A2A
+
+and here is how it looks when imported into iThoughts:
+
+![](images/importable.png)
+
+This is obviously a very simple example, but it illustrates some features of the file format:
+
+* Each line is a node, apart from the first one.
+* All lines have a cell in the "level" column, with the level number filled in.
+* Some nodes have colours, in RGB format. (Nodes "A2" and "A1" inherit the turquoise colour from node "A".)
+* Some nodes have shapes associated with them.
+
+A more detailed description of the file format is given in [iThoughts CSV File Format](#ithoughtscsvfileformat) but this brief description should be enough to get you started.
+
+
+In more complex cases other columns come into play.
 
 ## About filterCSV
 
@@ -515,7 +540,7 @@ This would be for a mind map with only (isolated) top-level nodes. An example li
 
 The iThoughts CSV format is tabular.
     
-But usually you want more than one level of nodes:
+But usually you want more than one level of node:
 
     level,level0,level1,level2
     0,Top-level node

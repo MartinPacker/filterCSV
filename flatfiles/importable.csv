@@ -1,0 +1,5 @@
+"colour","shape","level","level0","level1","level2"
+00FFFF,,0,"A"
+,triangle,1,,A1
+,square,1,,A2
+FF0000,square,2,,,A2A
