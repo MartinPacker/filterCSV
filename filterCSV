@@ -31,11 +31,12 @@ import os
 from collections import Counter
 from string import hexdigits
 import xml.etree.ElementTree as ElementTree
+from datetime import datetime
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.10"
-filterCSV_date = "16 August, 2020"
+filterCSV_level = "1.11"
+filterCSV_date = "28 August, 2020"
 
 inputIndentCharacters = ""
 
@@ -122,7 +123,7 @@ class ParameterParser:
                 actionsString = sys.argv[parmNumber + 1].lower().replace(" ", ",")
 
                 parmPairs.append([matchCriterion, actionsString])
-                parmNumber += 1
+                parmNumber += 2
 
         for parmPair in parmPairs:
             # Handle match criterion
@@ -200,15 +201,11 @@ class TreeReader:
         """
         Add columns if they are not already present
         """
-        for column in "priority progress icons shape position note colour".split():
+        for (
+            column
+        ) in "dueDate startDate effort(hours) priority progress icons shape position note colour".split():
             if column not in csvRows[0]:
                 csvRows = self.injectColumn(csvRows, column)
-
-        # Ensure all title cells are lower case
-        cellNumber = 0
-        for cell in csvRows[0]:
-            csvRows[0][cellNumber] = cell.lower()
-            cellNumber += 1
 
         # Return the rows and the position of each column
         return (
@@ -221,6 +218,9 @@ class TreeReader:
             csvRows[0].index("icons"),
             csvRows[0].index("progress"),
             csvRows[0].index("priority"),
+            csvRows[0].index("effort(hours)"),
+            csvRows[0].index("startDate"),
+            csvRows[0].index("dueDate"),
         )
 
     def ensureColumnsPopulated(self, csvRows):
@@ -316,9 +316,59 @@ class TreeReader:
 
         return self.ensureMandatoryColumns(csvRows) + (output,)
 
-    def readMarkdownOrTextTree(self, inputFile):
+    def readMarkdownOrTextTree(self, inputFileWithPossibleMetadata):
         global inputIndentCharacters
+
         output = []
+
+        inputFile = []
+
+        metadata = {}
+
+        # See if there's a blank line to terminate Metadata
+        lineNumber = 0
+        firstBlankLineAt = -1
+        for line in inputFileWithPossibleMetadata:
+            if line == "\n":
+                firstBlankLineAt = lineNumber
+                break
+            lineNumber += 1
+
+        if firstBlankLineAt == -1:
+            # There is no Metadata
+            for line in inputFileWithPossibleMetadata:
+                inputFile.append(line)
+        else:
+            # Check everything before the blank line contains at least 1 colon
+            hasMetadata = True
+            lineNumber = 0
+            for line in inputFileWithPossibleMetadata:
+                if lineNumber >= firstBlankLineAt:
+                    break
+                if line.find(":") == -1:
+                    hasMetadata = False
+                lineNumber += 1
+            if hasMetadata:
+                # Is metadata so keep everything after the blank line
+
+                output.append("\nMetadata\n--------")
+
+                lineNumber = 0
+                for line in inputFileWithPossibleMetadata:
+                    if lineNumber > firstBlankLineAt:
+                        inputFile.append(line)
+                    elif lineNumber < firstBlankLineAt:
+                        splitLine = line.split(":", 1)
+                        metadataKey = splitLine[0]
+                        metadataValue = splitLine[1].strip()
+                        output.append(metadataKey + " -->" + metadataValue)
+                        metadata[metadataKey] = metadataValue
+                    lineNumber += 1
+                output.append("")
+            else:
+                # Is not metadata so keep the whole file
+                for line in inputFileWithPossibleMetadata:
+                    inputFile.append(line)
 
         # Build array of rows
         csvRows = []
@@ -375,6 +425,10 @@ class TreeReader:
         # Add a level column if one is not already present, and move the text into the
         # right level - for each data line
         for lineNumber, line in enumerate(inputFile):
+            # Remove any blank lines
+            if line == "\n":
+                continue
+
             # A data line so work out how many levels deep it is indented
             if indentLength > 0:
                 lineIndentLength = len(line) - len(line.lstrip())
@@ -472,6 +526,9 @@ class TreeReader:
         # levels
         csvRows.append(
             [
+                "dueDate",
+                "startDate",
+                "effort(hours)",
                 "priority",
                 "progress",
                 "icons",
@@ -504,7 +561,7 @@ class TreeReader:
         )
 
         if haveHead:
-            headCSVRow = ["", "", "", "", "", "", "0", titleText]
+            headCSVRow = ["", "", "", "", "", "", "", "", "", "0", titleText]
 
             csvRows.append(headCSVRow)
 
@@ -535,7 +592,7 @@ class TreeReader:
         csvRows = []
         nodeText = XMLNode.attrib["text"]
 
-        nodeRow = ["", "", "", "", "", "", str(level)]
+        nodeRow = ["", "", "", "", "", "", "", "", "", str(level)]
 
         levelBlankCells = [""] * (level)
         nodeRow += levelBlankCells
@@ -590,6 +647,9 @@ class TreeReader:
             # levels
             csvRows.append(
                 [
+                    "dueDate",
+                    "startDate",
+                    "effort(hours)",
                     "priority",
                     "progress",
                     "icons",
@@ -648,6 +708,9 @@ class TreeReader:
                     "",
                     "",
                     "",
+                    "",
+                    "",
+                    "",
                     "{-300,-120}",
                     iThoughtsColours.getColour(2),
                     "rectangle",
@@ -660,6 +723,9 @@ class TreeReader:
                     "",
                     "",
                     "",
+                    "",
+                    "",
+                    "",
                     "{-300,-85}",
                     iThoughtsColours.getColour(8),
                     "rectangle",
@@ -669,6 +735,9 @@ class TreeReader:
             )
             csvRows.append(
                 [
+                    "",
+                    "",
+                    "",
                     "",
                     "",
                     "",
@@ -685,6 +754,9 @@ class TreeReader:
                 "",
                 "",
                 "",
+                "",
+                "",
+                "",
                 "{0,0}",
                 iThoughtsColours.getColour(2),
                 "rounded",
@@ -693,6 +765,9 @@ class TreeReader:
         else:
             # Set position to blank for all but the root node
             elementCSVRow = [
+                "",
+                "",
+                "",
                 "",
                 "",
                 "",
@@ -719,6 +794,9 @@ class TreeReader:
                 "",
                 "",
                 "",
+                "",
+                "",
+                "",
                 iThoughtsColours.getColour(6),
                 "rounded",
                 f"{str(level + 1)}",
@@ -732,6 +810,9 @@ class TreeReader:
         if XMLNode.text is not None:
             if XMLNode.text.lstrip().rstrip() != "":
                 textCSVRow = [
+                    "",
+                    "",
+                    "",
                     "",
                     "",
                     "",
@@ -774,6 +855,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output1,
             ) = self.readiThoughtsCSVTree(inputFile)
 
@@ -791,6 +875,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output,
             )
         elif inputType == "CSV":
@@ -804,6 +891,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output1,
             ) = self.readNormalCSVTree(inputFile)
 
@@ -821,6 +911,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output,
             )
         elif inputType in ["markdown", "text"]:
@@ -834,6 +927,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output1,
             ) = self.readMarkdownOrTextTree(inputFile)
 
@@ -851,6 +947,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output,
             )
         elif inputType == "XML":
@@ -864,6 +963,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output1,
             ) = self.readXMLTree(inputFile)
 
@@ -887,6 +989,9 @@ class TreeReader:
                 iconsColumn,
                 progressColumn,
                 priorityColumn,
+                effortColumn,
+                startColumn,
+                dueColumn,
                 output,
             )
 
@@ -898,6 +1003,9 @@ class TreeWriter:
 
         # Write the header row
         headerRow = [
+            "dueDate",
+            "startDate",
+            "effort(hours)",
             "priority",
             "progress",
             "icons",
@@ -1205,16 +1313,47 @@ class iThoughtsSpread:
 
 class CSVTree:
     def __init__(
-        self, priority, progress, icons, shape, colour, note, level, position, cell
+        self,
+        dueDate,
+        startDate,
+        effort,
+        priority,
+        progress,
+        icons,
+        shape,
+        colour,
+        note,
+        level,
+        position,
+        cell,
     ):
         """
-        >>> csv_tree = CSVTree("priority", "progress", "icons","shape", "colour", "note", "level", 1, "cell")
+        >>> csv_tree = CSVTree("startDate", "dueDate", "effort(hours)", "priority", "progress", "icons","shape", "colour", "note", "level", 1, "cell")
         >>> csv_tree.data["shape"]
         'shape'
         """
         self.toBeDeleted = False
         self.childNodes = []
+
+        if dueDate == "":
+            parsedDueDate = None
+        else:
+            parsedDueDate = datetime.strptime(dueDate, "%Y-%m-%dT%H:%M:%S%z")
+
+        if startDate == "":
+            parsedStartDate = None
+        else:
+            parsedStartDate = datetime.strptime(startDate, "%Y-%m-%dT%H:%M:%S%z")
+
+        if effort == "":
+            parsedEffortHours = None
+        else:
+            parsedEffortHours = float(effort)
+
         self.data = {
+            "dueDate": parsedDueDate,
+            "startDate": parsedStartDate,
+            "effort(hours)": parsedEffortHours,
             "priority": priority,
             "progress": progress,
             "icons": icons,
@@ -1482,10 +1621,31 @@ class CSVTree:
         # Compose this node's line - if not root node
         level = int(self.data["level"])
         if level > -1:
-            line = [
-                self.data[key]
-                for key in "priority progress icons colour note position shape level".split()
-            ]
+            line = []
+            for (
+                key
+            ) in "dueDate startDate effort(hours) priority progress icons colour note position shape level".split():
+                if key == "dueDate":
+                    parsedDueDate = self.data["dueDate"]
+                    if parsedDueDate == None:
+                        line.append("")
+                    else:
+                        line.append(parsedDueDate.strftime("%Y-%m-%dT%H:%M:%S%z"))
+                elif key == "startDate":
+                    parsedStartDate = self.data["startDate"]
+                    if parsedStartDate == None:
+                        line.append("")
+                    else:
+                        line.append(parsedStartDate.strftime("%Y-%m-%dT%H:%M:%S%z"))
+                elif key == "effort(hours)":
+                    parsedEffortHours = self.data["effort(hours)"]
+                    if parsedEffortHours == None:
+                        line.append("")
+                    else:
+                        line.append(str(parsedEffortHours))
+                else:
+                    line.append(self.data[key])
+
             line += [""] * int(self.data["level"])
             line.append(self.data["cell"])
             outputArray.append(line)
@@ -2004,6 +2164,73 @@ class CSVTree:
 
         return output
 
+    def exportToTaskpaper(self, actionsList):
+        # Get the number of heading levels to allow before going to nested bulleted
+        # lists
+
+        return self._exportToTaskpaper()
+
+    def _exportToTaskpaper(self):
+        # Prime array of output lines
+        output = []
+
+        level = int(self.data["level"])
+        if level > -1:
+            if level == 0:
+                output.append(self.data["cell"] + ":")
+            else:
+                dueDate = self.data["dueDate"]
+                if dueDate == None:
+                    dueString = ""
+                else:
+                    dueString = " @due(" + formatTaskpaperDatetime(dueDate) + ")"
+
+                startDate = self.data["startDate"]
+                if startDate == None:
+                    deferString = ""
+                else:
+                    deferString = " @defer(" + formatTaskpaperDatetime(startDate) + ")"
+
+                effort = self.data["effort(hours)"]
+                if effort == None:
+                    effortString = ""
+                else:
+                    effortString = " @effort(" + str(effort) + ")"
+
+                priority = self.data["priority"]
+                if priority == "":
+                    priorityString = ""
+                else:
+                    priorityString = " @priority(" + priority + ")"
+
+                progress = self.data["progress"]
+                if progress == "":
+                    progressString = ""
+                elif progress == "100":
+                    progressString = " @done"
+                else:
+                    progressString = " @started"
+
+                output.append(
+                    "\t" * level
+                    + "- "
+                    + self.data["cell"]
+                    + dueString
+                    + deferString
+                    + effortString
+                    + priorityString
+                    + progressString
+                )
+
+                noteText = self.data["note"]
+                if noteText != "":
+                    output.append("\t" * (level + 1) + noteText)
+
+        for childNode in self.childNodes:
+            output += childNode._exportToTaskpaper()
+
+        return output
+
     def processKeep(self, matchCriterion):
         # Reset all nodes' matched flags
         self._markUnmatched()
@@ -2331,6 +2558,17 @@ def writeOutput(printLines):
         print(line, file=sys.stderr)
 
 
+def formatTaskpaperDatetime(date):
+    if date == None:
+        return ""
+    time = date.time()
+
+    if time.hour + time.minute == 0:
+        return date.strftime("%Y-%m-%d")
+    else:
+        return date.strftime("%Y-%m-%d %H:%M")
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         # No parameters so print help information and quit
@@ -2402,6 +2640,9 @@ manual.
         iconsColumn,
         progressColumn,
         priorityColumn,
+        effortColumn,
+        startColumn,
+        dueColumn,
         output,
     ) = TreeReader().createCSVArray()
 
@@ -2409,7 +2650,7 @@ manual.
 
     # Build the tree from the CSV array
     currentLevel = -1
-    csvTree = CSVTree("", "", "", "", "", "", currentLevel, "", "")
+    csvTree = CSVTree("", "", "", "", "", "", "", "", "", currentLevel, "", "")
     currentNode = csvTree
 
     for rowNumber, row in enumerate(csvRows[1:]):
@@ -2422,6 +2663,9 @@ manual.
         icons = row[iconsColumn]
         progress = row[progressColumn]
         priority = row[priorityColumn]
+        effort = row[effortColumn]
+        start = row[startColumn]
+        due = row[dueColumn]
 
         cellValue = row[levelColumn + level + 1]
 
@@ -2430,6 +2674,9 @@ manual.
             currentLevel = level
             currentNode = currentNode.addChild(
                 CSVTree(
+                    due,
+                    start,
+                    effort,
                     priority,
                     progress,
                     icons,
@@ -2445,6 +2692,9 @@ manual.
             # New sibling of previous node
             currentNode = currentNode.parent.addChild(
                 CSVTree(
+                    due,
+                    start,
+                    effort,
                     priority,
                     progress,
                     icons,
@@ -2468,6 +2718,9 @@ manual.
             # Add the new node - now we've found the parent to add it to
             currentNode = parentNode.addChild(
                 CSVTree(
+                    due,
+                    start,
+                    effort,
                     priority,
                     progress,
                     icons,
@@ -2506,6 +2759,7 @@ manual.
                 "stats": csvTree.writeStatistics,
                 "vspread": csvTree.doVerticalSpread,
                 "xml": csvTree.exportToXML,
+                "taskpaper": csvTree.exportToTaskpaper,
             }.get(matchCriterion.pattern.lower())
             if func:
                 output = func(actionsList)

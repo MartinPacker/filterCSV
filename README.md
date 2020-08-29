@@ -31,11 +31,12 @@ To a very limited extent the format is documented [here](https://www.toketaware.
         * [Merging Nodes Into Their Parent Node](#mergingnodesintotheirparentnode)
         * [Sorting Child Nodes](#sortingchildnodes)
         * [Reversing The Order Of Child Nodes](#reversingtheorderofchildnodes)
+        * [Spreading Out Level 0 (Root) Nodes](#spreadingoutlevel0rootnodes)
     * [Input Files](#inputfiles)
         * [Nesting Level Detection](#nestingleveldetection)
+        * [Metadata](#metadata)
         * [Checking](#checking)
         * [Handling CSV Files Not In The Format iThoughts Expects](#handlingcsvfilesnotintheformatithoughtsexpects)
-        * [Spreading Out Level 0 (Root) Nodes](#spreadingoutlevel0rootnodes)
     * [Output Formats](#outputformats)
         * [Markdown Output](#markdownoutput)
         * [HTML Output](#htmloutput)
@@ -70,7 +71,6 @@ This is obviously a very simple example, but it illustrates some features of the
 * Some nodes have shapes associated with them.
 
 A more detailed description of the file format is given in [iThoughts CSV File Format](#ithoughtscsvfileformat) but this brief description should be enough to get you started.
-
 
 In more complex cases other columns come into play.
 
@@ -325,6 +325,23 @@ will reverse the order of the children of the nodes whose text is "A1".
 
 You can use reverse after sort to make the sort effectively alphabetically descending.
 
+#### Spreading Out Level 0 (Root) Nodes
+
+If you import a CSV file into iThoughts without specifying positions in the file iThoughts will place all the Level 0 (root) nodes on top of each other. \
+This is probably not what you want. \
+filterCSV can spread out the Level 0 nodes - either horizontally or vertically.
+
+For example, if you specify `vspread 500` filterCSV will set the positions of the Level 0 nodes 500 units apart - one above the other.
+
+For example, if you specify  `hspread 1000` filterCSV will set the positions of the Level 0 nodes 500 units apart - spaced out horizontally.
+
+In both cases the children will be arranged as normal, relative to the root nodes.
+
+vspread and hspread set the values for these nodes in the "position" column in the CSV file.\
+Their format is of the form "{1000,0}". \
+(In this example "1000" is the horizontal offset and "0" is the vertical offset.) \
+If you specify vspread or hspread they will overwrite all Level 0 nodes' positions.
+
 ### Input Files
 
 Input files can be in one of six formats:
@@ -357,6 +374,24 @@ leads to the input file being interpreted as a level 0 node with text "A" and it
 For an XML input file the nesting level is in the data stream; Elements' children are at a deeper nesting level. \
 On import child nodes are created for the element's value (if it has one) and any attributes. \
 These are colour coded and free-standing nodes marked "Element", "Value", and "Attribute" are added as a legend.
+
+#### Metadata
+
+When importing Markdown text it can contain metadata that isn't part of the structure of the data. \
+Here is an example of such a file:
+
+```
+font-size: 14
+creation-date: 2020-08-29
+   
+   * A
+       * A1
+       * A2
+```
+Metadata consists of key/value pairs, one per line, at the beginning of the file. After the last line of metadata is a blank line. \filterCSV performs two actions on encountering metadata:
+
+* Metadata key/value pairs are extracted and printed under the heading "Metadata".
+* The metadata, including the blank line, is removed and filterCSV processes the remainder of the file.
 
 #### Checking
 
@@ -396,23 +431,6 @@ Here is an example.
     ,,"A2A"
 
 In the above node "A" is at level 0, nodes "A1" and "A2" are at level 1 - and "A2" has a note ("This is a note"), and "A2A" is at level 2.
-
-#### Spreading Out Level 0 (Root) Nodes
-
-If you import a CSV file into iThoughts without specifying positions in the file iThoughts will place all the Level 0 (root) nodes on top of each other. \
-This is probably not what you want. \
-filterCSV can spread out the Level 0 nodes - either horizontally or vertically.
-
-For example, if you specify `vspread 500` filterCSV will set the positions of the Level 0 nodes 500 units apart - one above the other.
-
-For example, if you specify  `hspread 1000` filterCSV will set the positions of the Level 0 nodes 500 units apart - spaced out horizontally.
-
-In both cases the children will be arranged as normal, relative to the root nodes.
-
-vspread and hspread set the values for these nodes in the "position" column in the CSV file.\
-Their format is of the form "{1000,0}". \
-(In this example "1000" is the horizontal offset and "0" is the vertical offset.) \
-If you specify vspread or hspread they will overwrite all Level 0 nodes' positions.
 
 ### Output Formats
 
