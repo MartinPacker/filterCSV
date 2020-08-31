@@ -348,14 +348,17 @@ Input files can be in one of six formats:
 
 * A CSV file that is already in a format supported by iThoughts' Import function.
 * A flat file where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at.
-* A Markdown nested list where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at. Only an asterisk (`*`) followed by a space is supported as a list item marker.
+* A Markdown nested list where each line is a new node. Spaces and tabs can be used to indent the text. Here the level of indentation is used to control what level the line is added at. Either an asterisk (`*`) or a minus sign followed by a space are supported as a list item marker. \
+Further, Markdown headings of one type, described below, can be used.
 * An OPML XML file - with or without `head` or `body` elements.
 * An XML file, including one with namespaces (both default and named).
 * A CSV file where the hierarchy is described by how many empty cells are to the left of the first cell with text in.
 
 #### Nesting Level Detection
 
-When parsing a Markdown or tab/space-indented non-CSV file the first line with leading white space (spaces and/or tabs) is used to detect the indentation scheme: Any white space on this line is used as a single indentation level marker. It is expected that all lines are indented in the same way.
+When parsing a Markdown or tab/space-indented non-CSV file the first line with leading white space (spaces and/or tabs) is used to detect the indentation scheme: \
+Any white space on this line is used as a single indentation level marker. \
+It is expected that all lines are indented in the same way.
 
 For example, if the second line starts with two spaces this is taken to indicate that every line will have zero, two, four, etc spaces:
 
@@ -364,12 +367,51 @@ For example, if the second line starts with two spaces this is taken to indicate
 * Four spaces denotes a level 2 node
 * And so on
 
-If the file is detected to contain Markdown, leading dashes and asterisks followed by a single space are removed. (These are bulleted list markers in Markdown.) For example:
+If the file is detected to contain Markdown, leading dashes and asterisks followed by a single space are removed. \
+(These are bulleted list markers in Markdown.) \
+For example:
 
     * A
         * A1
 
 leads to the input file being interpreted as a level 0 node with text "A" and its child node with text "A1".
+
+You can also specify nesting levels using one of the two forms of heading that Markdown supports. \
+Consider the following example:
+
+    # Fruit
+    
+    ## Citrus
+    
+    * Lemon
+    * Orange
+    * Vaguely orange-like
+        * Mandarin
+        * Satsuma
+
+In this example:
+
+* "Fruit" is a Heading Level 0 node.
+* "Citrus" is a Heading Level 1 node.
+* "Lemon", "Orange" and "Vaguely orange-like" are Heading Level 2 nodes.
+* "Mandarin" and "Satsuma" are Heading Level 3 nodes.
+* The blank lines in between are ignored.
+* The leading `#` and `*` characters are removed, as are the first space after each occurrence.
+
+The resulting CSV file contains:
+
+    "dueDate","startDate","effort(hours)","priority","progress","icons","colour","note","position","shape","level","level0","level1","level2","level3"
+    "","","","","","","","","","","0","Fruit"
+    "","","","","","","","","","","1","","Citrus"
+    "","","","","","","","","","","2","","","Lemon"
+    "","","","","","","","","","","2","","","Orange"
+    "","","","","","","","","","","2","","","Vaguely orange-like"
+    "","","","","","","","","","","3","","","","Mandarin"
+    "","","","","","","","","","","3","","","","Satsuma"
+
+Imported into iThoughtsX, the resulting tree looks like:
+
+![](images/importedMarkdown.png)
 
 For an XML input file the nesting level is in the data stream; Elements' children are at a deeper nesting level. \
 On import child nodes are created for the element's value (if it has one) and any attributes. \
@@ -465,13 +507,25 @@ In the second case two levels of heading are required, starting with heading lev
 
 You can export to HTML as either a nested list or a table. Colour is preserved on output, as are notes.
 
+You can specify HTML nested list output by invocations such as
+
+    filterCSV html list < myfile.csv > myfile.md
+
 You can specify HTML table output by invocations such as
 
     filterCSV html table < myfile.csv > myfile.md
 
-You can specify HTML nested list output by invocations such as
+The table will have extra columns if any of the nodes in the tree have any of the following attributes. \
+Each column has its own `class` attribute - which can be used for styling with CSS:
 
-    filterCSV html list < myfile.csv > myfile.md
+|Atribute|Class|
+|:-|:-|
+|Due Date|dueDate|
+|Start Date|startDate|
+|Effort|effort|
+|Priority|priority|
+|Progress|progress|
+
 
 #### Freemind And OPML XML Output
 

@@ -32,11 +32,12 @@ from collections import Counter
 from string import hexdigits
 import xml.etree.ElementTree as ElementTree
 from datetime import datetime
+from functools import reduce
 
 # from CSVTree import CSVTree
 
 filterCSV_level = "1.11"
-filterCSV_date = "28 August, 2020"
+filterCSV_date = "31 August, 2020"
 
 inputIndentCharacters = ""
 
@@ -173,15 +174,11 @@ class TreeReader:
         if firstLine.lower().find("level0") > -1:
             return "iThoughtsCSV"
         else:
-            for line in inputFile:
-                if line.find(",") > -1:
-                    return "CSV"
-
             if firstLine.find(",") > -1:
                 return "CSV"
             elif firstChar == "<":
                 return "XML"
-            elif firstChar in ["#", "*", "-"]:
+            elif (firstChar in ["#", "*", "-"]) or (firstLine.find(":") > -1):
                 return "markdown"
             else:
                 return "text"
@@ -370,6 +367,38 @@ class TreeReader:
                 for line in inputFileWithPossibleMetadata:
                     inputFile.append(line)
 
+        maxHeadingLevel = -1
+        # Detect heading levels
+        headingLevels = [False, False, False, False, False, False]
+        for line in inputFile:
+            if line.startswith("# "):
+                maxHeadingLevel = max(maxHeadingLevel, 0)
+                headingLevels[0] = True
+            elif line.startswith("## "):
+                maxHeadingLevel = max(maxHeadingLevel, 1)
+                headingLevels[1] = True
+            elif line.startswith("### "):
+                maxHeadingLevel = max(maxHeadingLevel, 2)
+                headingLevels[2] = True
+            elif line.startswith("#### "):
+                maxHeadingLevel = max(maxHeadingLevel, 3)
+                headingLevels[3] = True
+            elif line.startswith("##### "):
+                maxHeadingLevel = max(maxHeadingLevel, 4)
+                headingLevels[4] = True
+            elif line.startswith("###### "):
+                maxHeadingLevel = max(maxHeadingLevel, 5)
+                headingLevels[5] = True
+
+        headingLevelCount = 0
+        headingLevelString = ""
+        for h in range(6):
+            if headingLevels[h]:
+                headingLevelString += " " + str(h + 1)
+                headingLevelCount += 1
+
+        output.append("Heading levels detected: " + headingLevelString + "\n")
+
         # Build array of rows
         csvRows = []
 
@@ -377,6 +406,8 @@ class TreeReader:
         # using the first indented line as the template.
         indentLength = 0
         for line in inputFile:
+            if line == "\n":
+                continue
             indentLength = len(line) - len(line.lstrip())
             if indentLength > 0:
                 # This is the first line with whitespace at the beginning
@@ -470,10 +501,20 @@ class TreeReader:
 
             newRow = []
 
-            if indentLength == 0:
+            if line.startswith("# "):
                 level = 0
+            elif line.startswith("## "):
+                level = 1
+            elif line.startswith("### "):
+                level = 2
+            elif line.startswith("#### "):
+                level = 3
+            elif line.startswith("##### "):
+                level = 4
+            elif indentLength == 0:
+                level = maxHeadingLevel + 1
             else:
-                level = lineIndentLength // indentLength
+                level = maxHeadingLevel + 1 + (lineIndentLength // indentLength)
 
             newRow.append(str(level))
 
@@ -481,9 +522,21 @@ class TreeReader:
             for lev in range(level):
                 newRow.append("")
 
-            # Clean the line text to remove any list item marker
+            # Clean the line text to remove any list item marker or heading text
             cleanedLine = line.lstrip().rstrip()
-            if cleanedLine[0:2] in ["* ", "- "]:
+            if cleanedLine[0:2] == "# ":
+                cleanedLine = cleanedLine[2:]
+            if cleanedLine[0:3] == "## ":
+                cleanedLine = cleanedLine[3:]
+            if cleanedLine[0:4] == "### ":
+                cleanedLine = cleanedLine[4:]
+            if cleanedLine[0:5] == "#### ":
+                cleanedLine = cleanedLine[5:]
+            if cleanedLine[0:6] == "##### ":
+                cleanedLine = cleanedLine[6:]
+            if cleanedLine[0:7] == "###### ":
+                cleanedLine = cleanedLine[7:]
+            elif cleanedLine[0:2] in ["* ", "- "]:
                 cleanedLine = cleanedLine[2:]
 
             # Add the cleaned line at the appropriate level
@@ -1903,14 +1956,51 @@ class CSVTree:
         output = []
 
         if action == "table":
+
             # Work out how many levels are needed
             maximumLevel = self.calculateMaximumLevel()
 
             # Write table start
             output.append("<table>")
 
+            # Get tree properties to figure out what columns to write
+            treeProperties = self.getTreeProperties()
+
+            # Put out headings - if needed
+            if reduce(lambda a, b: bool(a or b), treeProperties):
+                # At least one heading wanted
+                (
+                    hasNote,
+                    hasPosition,
+                    hasDueDate,
+                    hasStartDate,
+                    hasEffort,
+                    hasPriority,
+                    hasProgress,
+                    hasIcon,
+                    hasShape,
+                ) = treeProperties
+
+                output.append("<tr>")
+
+                if hasDueDate:
+                    output.append("<th class='duedate'>Due Date</th>")
+
+                if hasStartDate:
+                    output.append("<th class='startdate'>Start Date</th>")
+
+                if hasEffort:
+                    output.append("<th class='effort'>Effort<br/>(Hours)</th>")
+
+                if hasPriority:
+                    output.append("<th class='priority'>Priority</th>")
+
+                if hasProgress:
+                    output.append("<th class ='progress'>Progress<br/>&percnt;</th>")
+
+                output.append("</tr>")
             # Write table rows
-            output += self._exportToHTMLTable(maximumLevel, action)
+            output += self._exportToHTMLTable(maximumLevel, action, treeProperties)
 
             # Write table end
             output.append("</table>")
@@ -1928,7 +2018,7 @@ class CSVTree:
 
         return output
 
-    def _exportToHTMLTable(self, maximumLevel, action):
+    def _exportToHTMLTable(self, maximumLevel, action, treeProperties):
         # Prime array of output lines
         output = []
 
@@ -1939,6 +2029,46 @@ class CSVTree:
         if level > -1:
             # Print table row start
             output.append("<tr>")
+
+            (
+                hasNote,
+                hasPosition,
+                hasDueDate,
+                hasStartDate,
+                hasEffort,
+                hasPriority,
+                hasProgress,
+                hasIcon,
+                hasShape,
+            ) = treeProperties
+
+            # Print any required optional columns
+            if hasDueDate:
+                dueDate = self.data["dueDate"]
+                output.append(
+                    "<td class='duedate'>" + formatTaskpaperDatetime(dueDate) + "</td>"
+                )
+
+            if hasStartDate:
+                startDate = self.data["startDate"]
+                output.append(
+                    "<td class='startDate'>"
+                    + formatTaskpaperDatetime(startDate)
+                    + "</td>"
+                )
+
+            if hasEffort:
+                effort = self.data["effort(hours)"]
+                if effort is None:
+                    output.append("<td class='effort'></td>")
+                else:
+                    output.append("<td class='effort'>" + str(effort) + "</td>")
+
+            if hasPriority:
+                output.append("<td class='priority'>" + self.data["priority"] + "</td>")
+
+            if hasProgress:
+                output.append("<td class='progress'>" + self.data["progress"] + "</td>")
 
             # Print padding empty columns after the cell's column
             if level > 0:
@@ -1967,7 +2097,7 @@ class CSVTree:
             output.append("</tr>")
 
         for childNode in self.childNodes:
-            output += childNode._exportToHTMLTable(maximumLevel, action)
+            output += childNode._exportToHTMLTable(maximumLevel, action, treeProperties)
 
         return output
 
@@ -2540,6 +2670,115 @@ class CSVTree:
         newChildren.reverse()
         self.childNodes = newChildren
 
+    # Prints list of optional tree properties
+    def printTreeProperties(self):
+        (
+            hasNote,
+            hasPosition,
+            hasDueDate,
+            hasStartDate,
+            hasEffort,
+            hasPriority,
+            hasProgress,
+            hasIcon,
+            hasShape,
+        ) = self.getTreeProperties()
+
+        sys.stderr.write("Properties\n----------\n")
+        sys.stderr.write("Note: " + str(hasNote) + "\n")
+        sys.stderr.write("Position: " + str(hasPosition) + "\n")
+        sys.stderr.write("Due Date: " + str(hasDueDate) + "\n")
+        sys.stderr.write("Start Date: " + str(hasStartDate) + "\n")
+        sys.stderr.write("Effort: " + str(hasEffort) + "\n")
+        sys.stderr.write("Priority: " + str(hasPriority) + "\n")
+        sys.stderr.write("Progress: " + str(hasProgress) + "\n")
+        sys.stderr.write("Icon: " + str(hasIcon) + "\n")
+        sys.stderr.write("Shape: " + str(hasShape) + "\n")
+
+        sys.stderr.write("\n")
+
+    # Returns list of whether tree has any nodes with this property set in
+    # any way - for each optional property
+    def getTreeProperties(self):
+        if self.data["note"] == "":
+            hasNote = False
+        else:
+            hasNote = True
+
+        if self.data["position"] == "":
+            hasPosition = False
+        else:
+            hasPosition = True
+
+        if self.data["dueDate"] == None:
+            hasDueDate = False
+        else:
+            hasDueDate = True
+
+        if self.data["startDate"] == None:
+            hasStartDate = False
+        else:
+            hasStartDate = True
+
+        if self.data["effort(hours)"] == None:
+            hasEffort = False
+        else:
+            hasEffort = True
+
+        if self.data["priority"] == "":
+            hasPriority = False
+        else:
+            hasPriority = True
+
+        if self.data["progress"] == "":
+            hasProgress = False
+        else:
+            hasProgress = True
+
+        if self.data["icons"] == "":
+            hasIcon = False
+        else:
+            hasIcon = True
+
+        if self.data["shape"] == "":
+            hasShape = False
+        else:
+            hasShape = True
+
+        for child in self.childNodes:
+            (
+                childHasNote,
+                childHasPosition,
+                childHasDueDate,
+                childHasStartDate,
+                childHasEffort,
+                childHasPriority,
+                childHasProgress,
+                childHasIcon,
+                childHasShape,
+            ) = child.getTreeProperties()
+            hasNote = hasNote | childHasNote
+            hasPosition = hasPosition | childHasPosition
+            hasDueDate = hasDueDate | childHasDueDate
+            hasStartDate = hasStartDate | childHasStartDate
+            hasEffort = hasEffort | childHasEffort
+            hasPriority = hasPriority | childHasPriority
+            hasProgress = hasProgress | childHasProgress
+            hasIcon = hasIcon | childHasIcon
+            hasShape = hasShape | childHasShape
+
+        return (
+            hasNote,
+            hasPosition,
+            hasDueDate,
+            hasStartDate,
+            hasEffort,
+            hasPriority,
+            hasProgress,
+            hasIcon,
+            hasShape,
+        )
+
 
 def formatWhitespaceCharacters(whitespace):
     """
@@ -2747,6 +2986,8 @@ manual.
             sys.stderr.write(csvTree.dump(actionsList))
         elif actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
+        elif matchCriterion.pattern.lower() == "properties":
+            csvTree.printTreeProperties()
         else:
             func = {
                 "check": csvTree.checkHierarchy,
