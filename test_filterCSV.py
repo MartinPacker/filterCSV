@@ -147,9 +147,7 @@ testdata = {
 def test_file_processing(args, stdin_file):
     args = args.split()
     dirname, basename = os.path.split(stdin_file)
-    file_base = "_".join(args + [basename.replace(".", "_")])
-    file_base = file_base.replace("^", "").replace("$", "").replace("|", "")
-    file_base = os.path.join(dirname, "expected", file_base)
+    file_base = os.path.join(dirname, "expected", "_".join(args + [basename.replace(".", "_")]).replace("^", "").replace("$", "").replace("|", ""))
     # tests/expected/check_repairsubtree_badLevels_csv
     # tests/expected/A2AX_keep_test1_csv
 
