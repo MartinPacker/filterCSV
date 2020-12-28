@@ -42,7 +42,7 @@ To a very limited extent the format is documented [here](https://www.toketaware.
         * [Markdown Output](#markdown-output)
         * [HTML Output](#html-output)
         * [Freemind And OPML XML Output](#freemind-and-opml-xml-output)
-        * [GraphViz .dot Format](#graphviz.dotformat)
+        * [GraphViz .dot Format](#graphviz-dot-format)
         * [Indented Text](#indented-text)
     * [iThoughts CSV File Format](#ithoughts-csv-file-format)
     * [Command Files](#command-files)
@@ -71,7 +71,7 @@ This is obviously a very simple example, but it illustrates some features of the
 * Some nodes have colours, in RGB format. (Nodes "A2" and "A1" inherit the turquoise colour from node "A".)
 * Some nodes have shapes associated with them.
 
-A more detailed description of the file format is given in [iThoughts CSV File Format](#ithoughtscsvfileformat) but this brief description should be enough to get you started.
+A more detailed description of the file format is given in [iThoughts CSV File Format](#ithoughts-csv-file-format) but this brief description should be enough to get you started.
 
 In more complex cases other columns come into play.
 
