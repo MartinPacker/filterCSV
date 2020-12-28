@@ -36,8 +36,8 @@ from functools import reduce
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.11"
-filterCSV_date = "31 August, 2020"
+filterCSV_level = "1.12"
+filterCSV_date = "28 December, 2020"
 
 inputIndentCharacters = ""
 
@@ -1570,6 +1570,8 @@ class CSVTree:
                 self.data["icons"] += "," + action
         elif action == "noicons":
             self.data["icons"] = ""
+        elif action[0:4] == "sub:":
+        	self.data["cell"] = re.sub(criterion, action[4:], self.data["cell"])
         elif action.isdigit():
             # Attempt to parse as from the colour palette
             colourNumber = int(action)
