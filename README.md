@@ -11,7 +11,7 @@ There can be multiple root nodes - and hence multiple trees - in an iThoughts CS
 As well as the nodes' tree structure, an iThoughts' CSV file can store for each node its colour, its position, its shape and other attributes.
 To a very limited extent the format is documented [here](https://www.toketaware.com/ithoughts-howto-csv). A better way to understand the format is to export a mind map from iThoughts as CSV and look at the resulting file.
 
-* [An Introduction To The iThoughts CSV File Format](#anintroductiontotheithoughtscsvfileformat)
+* [An Introduction To The iThoughts CSV File Format](#an-introduction-to-the-ithoughts-csv-file-format)
 * [About filterCSV](#aboutfiltercsv)
 * [Using filterCSV](#usingfiltercsv)
     * [Specifiers](#specifiers)
