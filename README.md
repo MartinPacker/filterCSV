@@ -32,6 +32,7 @@ To a very limited extent the format is documented [here](https://www.toketaware.
         * [Sorting Child Nodes](#sortingchildnodes)
         * [Reversing The Order Of Child Nodes](#reversingtheorderofchildnodes)
         * [Spreading Out Level 0 (Root) Nodes](#spreadingoutlevel0rootnodes)
+        * [Replacing Strings](#replacingstrings)
     * [Input Files](#inputfiles)
         * [Nesting Level Detection](#nestingleveldetection)
         * [Metadata](#metadata)
@@ -341,6 +342,34 @@ vspread and hspread set the values for these nodes in the "position" column in t
 Their format is of the form "{1000,0}". \
 (In this example "1000" is the horizontal offset and "0" is the vertical offset.) \
 If you specify vspread or hspread they will overwrite all Level 0 nodes' positions.
+
+#### Replacing Strings
+
+Regular expressions can be used for searching for and replacing strings - if these strings are in a format the Python `re` module's `sub` method understands.
+
+For example, the author's Production code emits iThoughts-friendly CSV files where the newline character ("\\n") is generated as a semicolon. \
+filterCSV can readily replace every semicolon by a newline character. For example:
+
+    filterCSV ';' sub:$'\n' < input.csv > output.csv
+
+Here the shell renders `$'\n'` as a newline character. \
+iThoughts honours these newline characters in rendering the nodes.
+
+To indicate you want a matched string replaced code the action beginning with `sub:`. \
+For example, if you want every occurrence of "A" replaced with "B" code:
+
+    filterCSV 'A' 'sub:B' < input.csv > output.csv
+
+You can use references to matching groups. \
+For example:
+
+    filterCSV '(\d)' 'sub:\1\1' < input.csv > output.csv
+
+replaces every numeric digit with two copies of itself. \
+Here the capturing group, marked by the bracketed expression `(\d)`, is referred to as "Capturing Group 1". \
+The `\1` in the replacement refers to this capturing group.
+
+In general you can use the full flexibility of Python 3's `re.sub()` method.
 
 ### Input Files
 
