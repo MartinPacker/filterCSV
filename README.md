@@ -18,6 +18,7 @@ To a very limited extent the format is documented [here](https://www.toketaware.
     * [Actions](#actions)
         * [Colour Numbers](#colour-numbers)
         * [Colour RGB Values](#colour-rgb-values)
+        * [Automatic Colouring](#automatic-colouring)
         * [Delete](#delete)
         * [Keep](#keep)
         * [Shapes](#shapes)
@@ -152,6 +153,7 @@ Actions you can take include:
 
 * Specify a colour number
 * Specify a colour RGB value
+* Automate colouring nodes based on a regular expression's capturing group
 * `delete`
 * `keep`
 * Specify a shape
@@ -175,6 +177,23 @@ You can also specify `nextcolour`, `nextcolor` or even `nc` and filterCSV will s
 
 This is a hexadecimal 6-character representation of the colour, in Red-Green-Blue (RGB) format. For example `FFAAFF`.
 
+
+#### Automatic Colouring
+
+Rather than either using [Colour Numbers](#colour-numbers) or [Colour RGB Values](#colour-rgb-values) you might be able to automate colouring nodes.
+
+Automatic node colouring requires you to code a capturing group inside a regular expression.
+
+Here is an example:
+
+    filterCSV '-(.?)-' autocolour < test1.csv > test2.csv
+
+The capturing group is the portion of the regular expression inside the round brackets. When filterCSV processes this command it keeps track of the values that match the capturing group and uses them to consistently colour the nodes.
+
+**Notes**
+
+1. You can specify `autocolour`, `autocolor`, or even `ac`.
+1. You can use multiple capturing groups, for example `RC: (.*) SC: (.*)`. filterCSV uses all the groups to form a key; When **any** of the capturing groups' values changes a new colour is selected.
 #### Delete
 
 `delete` deletes the matching node and all its children.

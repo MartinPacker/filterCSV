@@ -36,8 +36,8 @@ from functools import reduce
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "1.12"
-filterCSV_date = "28 December, 2020"
+filterCSV_level = "2.0"
+filterCSV_date = "17 April, 2022"
 
 inputIndentCharacters = ""
 
@@ -1485,18 +1485,23 @@ class CSVTree:
 
             # Don't propagate
             propagateToChildren = False
+
         elif action == "asbullet":
             self.makeAsBulletOfParent()
+
         elif action == "reverse":
             self.reverseChildren()
+
         elif action == "sort":
             self.sortChildren()
+
         elif action[0] == "{":
             # position specified
             self.data["position"] = action
 
             # Don't propagate
             propagateToChildren = False
+
         elif action == "note":
             # Document the match in the note field
             if isinstance(criterion, str):
@@ -1508,24 +1513,31 @@ class CSVTree:
                 self.data["note"] += "\nMatched " + criterionString
             else:
                 self.data["note"] = "Matched " + criterionString
+
         elif action == "noshape":
             # Remove any shape specification from the matched node
             self.data["shape"] = ""
+
         elif action == "nonote":
             # Remove any note specification from the matched node
             self.data["note"] = ""
+
         elif action == "noposition":
             # Remove any position specification from the matched node
             self.data["position"] = ""
+
         elif action == "nocolour":
             # Remove any colour specification from the matched node
             self.data["colour"] = ""
+
         elif len(action) == 6 and all(c in hexdigits for c in action):
             # 6-digit hexadecimal so is colour RGB value
             self.data["colour"] = action
+
         elif action in iThoughtsShapes:
             # Is a shape
             self.data["shape"] = action
+
         elif action[0:9] == "priority:":
             if action[9:].isdigit():
                 self.data["priority"] = action[9:]
@@ -1534,6 +1546,7 @@ class CSVTree:
                     f"Erroneous priority value {action[9:]} "
                     f"(Pattern was: '{criterion.pattern}')." + "\n"
                 )
+
         elif action[0:5] == "prio:":
             if action[5].isdigit():
                 self.data["priority"] = action[5]
@@ -1542,8 +1555,10 @@ class CSVTree:
                     f"Erroneous priority value {action[5]} "
                     f"(Pattern was: '{criterion.pattern}')." + "\n"
                 )
+
         elif action in ["noprio", "nopriority"]:
             self.data["priority"] = ""
+
         elif action[0:9] == "progress:":
             if action[9:].isdigit():
                 self.data["progress"] = action[9:]
@@ -1552,6 +1567,7 @@ class CSVTree:
                     f"Erroneous progress value {action[9:]} "
                     f"(Pattern was: '{criterion.pattern}')." + "\n"
                 )
+
         elif action[0:5] == "prog:":
             if action[5].isdigit():
                 self.data["progress"] = action[5]
@@ -1562,16 +1578,20 @@ class CSVTree:
                 )
         elif action in ["noprog", "noprogress"]:
             self.data["progress"] = ""
+
         elif action in iThoughtsIcons:
             # Is an icons
             if self.data["icons"] == "":
                 self.data["icons"] = action
             else:
                 self.data["icons"] += "," + action
+
         elif action == "noicons":
             self.data["icons"] = ""
+
         elif action[0:4] == "sub:":
-        	self.data["cell"] = re.sub(criterion, action[4:], self.data["cell"])
+            self.data["cell"] = re.sub(criterion, action[4:], self.data["cell"])
+
         elif action.isdigit():
             # Attempt to parse as from the colour palette
             colourNumber = int(action)
@@ -1586,6 +1606,7 @@ class CSVTree:
 
             else:
                 self.data["colour"] = iThoughtsColours.getColour(colourNumber)
+
         else:
             sys.stderr.write(
                 f"Erroneous action value {action} "
@@ -2374,6 +2395,44 @@ class CSVTree:
         # Delete any unmatched nodes
         self._deleteUnmarked()
 
+    def _processKeep(self, matchCriterion):
+        if self.isMatch(matchCriterion) is True:
+            # mark self and all the ancestors matched
+            self._markAncestorsMatched()
+
+            # mark self and its subtree matched
+            self._markSubtreeMatched()
+        else:
+            # Maybe children etc are matches
+            for childNode in self.childNodes:
+                childNode._processKeep(matchCriterion)
+
+    def processAutocolour(self, matchCriterion):
+        self._processAutocolour(matchCriterion, [])
+
+    def _processAutocolour(self, matchCriterion, matchValues):
+        if self.isMatch(matchCriterion) is True:
+            # Process node as a match
+            searchResult = matchCriterion.search(self.data["cell"])
+
+            # Get key - tuple with match values for each group
+            matchValue = searchResult.groups()
+
+            # Handle whether key is a new key or existing
+            if matchValue not in matchValues:
+                # New colour
+                matchValues.append(matchValue)
+
+                colourNumber = len(matchValues)
+            else:
+                # Existing colour
+                colourNumber = matchValues.index(matchValue) + 1
+            self.data["colour"] = iThoughtsColours.getColour(colourNumber)
+
+        # Maybe children etc are matches
+        for childNode in self.childNodes:
+            childNode._processAutocolour(matchCriterion, matchValues)
+
     def _markUnmatched(self):
         self.matched = False
 
@@ -2389,18 +2448,6 @@ class CSVTree:
         self.matched = True
         for childNode in self.childNodes:
             childNode._markSubtreeMatched()
-
-    def _processKeep(self, matchCriterion):
-        if self.isMatch(matchCriterion) is True:
-            # mark self and all the ancestors matched
-            self._markAncestorsMatched()
-
-            # mark self and its subtree matched
-            self._markSubtreeMatched()
-        else:
-            # Maybe children etc are matches
-            for childNode in self.childNodes:
-                childNode._processKeep(matchCriterion)
 
     def _deleteUnmarked(self):
         for childNode in self.childNodes:
@@ -2856,6 +2903,7 @@ manual.
         """
         )
         sys.exit()
+
     iThoughtsColours = iThoughtsColours()
 
     iThoughtsShapes = iThoughtsShapes()
@@ -2984,12 +3032,19 @@ manual.
         actionsList = actionsLists[parmPair]
         if (isinstance(matchCriterion, str)) and (matchCriterion.startswith("@")):
             csvTree.applyActions(matchCriterion, actionsList)
+
         elif matchCriterion.pattern.lower() == "dump":
             sys.stderr.write(csvTree.dump(actionsList))
+
         elif actionsList[0] == "keep":
             csvTree.processKeep(matchCriterion)
+
+        elif actionsList[0] in ["autocolour", "autocolor", "ac"]:
+            csvTree.processAutocolour(matchCriterion)
+
         elif matchCriterion.pattern.lower() == "properties":
             csvTree.printTreeProperties()
+
         else:
             func = {
                 "check": csvTree.checkHierarchy,
@@ -3004,12 +3059,14 @@ manual.
                 "xml": csvTree.exportToXML,
                 "taskpaper": csvTree.exportToTaskpaper,
             }.get(matchCriterion.pattern.lower())
+
             if func:
                 output = func(actionsList)
                 if output:
                     print("\n".join(output))
                     sys.exit()
                 # commands that generate no output fall through
+
             else:
                 csvTree.applyActions(matchCriterion, actionsList)
 
