@@ -34,6 +34,7 @@ To a very limited extent the format is documented [here](https://www.toketaware.
         * [Reversing The Order Of Child Nodes](#reversing-the-order-of-child-nodes)
         * [Spreading Out Level 0 (Root) Nodes](#spreading-out-level-0-root-nodes)
         * [Replacing Strings](#replacing-strings)
+    * [Match Statistics](#match-statistics)
     * [Input Files](#input-files)
         * [Nesting Level Detection](#nesting-level-detection)
         * [Metadata](#metadata)
@@ -130,7 +131,8 @@ Specifiers are used to specify which nodes to operate on and can be in one of th
 * A special value of `none`, matching no nodes.
 * A level specifier of the form `@level:n` - where `n` is an integer, referring to the level number.
 * A priority specifier of the form `@priority:n` - where `n` is an integer between 1 and 5. You can use `@prio:n` for short. You can use `@nopriority` or `@noprio` to match nodes where the priority has not been set.
-* A progress specifier of the form ``@progress:n` - where `n` is an integer between 0 and 100, representing percent complete. You can use `@prog:n` for short. You can use `@noprogress` or `@noprog` to match nodes where the progress has not been set.
+* A progress specifier of the form `@progress:n` - where `n` is an integer between 0 and 100, representing percent complete. You can use `@prog:n` for short. You can use `@noprogress` or `@noprog` to match nodes where the progress has not been set.
+* A shape specifier of the form `@shape:myshape` - where `myshape` is one of the shapes described in [iThoughts Shape Names](#ithoughtsshapenames). You can use `@noshape` to specify nodes where the shape hasn't been set.
 
 **Notes:**
 
@@ -389,6 +391,27 @@ Here the capturing group, marked by the bracketed expression `(\d)`, is referred
 The `\1` in the replacement refers to this capturing group.
 
 In general you can use the full flexibility of Python 3's `re.sub()` method.
+
+### Match Statistics
+
+When filterCSV checks nodes against each [specifier](#specifiers) you get statistics for how many nodes matched the criterion.
+You also get the number of nodes that matched no criteria in the run. \
+
+Here is a sample:
+
+```
+Match Statistics
+----------------
+Match count for RegEx 'A2': 3
+Match count for RegEx 'A1': 2
+Match count for RegEx '^A1': 1
+Match count for @level:1: 2
+Match count for @noshape: 0
+Match count for @shape:square: 1
+Match count for RegEx '^A$': 1
+Remaining unmatched: 0
+----------------
+```
 
 ### Input Files
 
@@ -716,6 +739,7 @@ Comments aren't feasible with command line parameters - so using a command file 
 
 [tests/README.md](./tests/README.md) describes test files that you can study to become familiar with filterCSV.
 
+<a id="ithoughtsshapenames"></a>
 ## iThoughts Shape Names
 
 The following shape names are defined by iThoughts.
@@ -735,6 +759,7 @@ The following shape names are defined by iThoughts.
     square bracket
     curved bracket
 
+<a id="ithoughtsiconnames"></a>
 ## iThoughts Icon Names
 
 The following icon names are defined by iThoughts. You can use them in two places
