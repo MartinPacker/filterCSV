@@ -36,8 +36,8 @@ from functools import reduce
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "2.0"
-filterCSV_date = "17 April, 2022"
+filterCSV_level = "2.0+"
+filterCSV_date = "1 May, 2022"
 
 inputIndentCharacters = ""
 
@@ -1419,6 +1419,7 @@ class CSVTree:
         }
         self.parent = None
         self.matched = False
+        self.matches = 0
 
     def addChild(self, childNode):
         self.childNodes.append(childNode)
@@ -1591,7 +1592,9 @@ class CSVTree:
 
         elif action[0:4] == "sub:":
             self.data["cell"] = re.sub(criterion, action[4:], self.data["cell"])
-
+        elif action == "justcount":
+            pass
+            
         elif action.isdigit():
             # Attempt to parse as from the colour palette
             colourNumber = int(action)
@@ -1618,15 +1621,22 @@ class CSVTree:
         """
         Apply filter to this node - if not tree root
         """
+        
+        matchCount = 0
         propagateToChildren = True
         if self.data["level"] != -1:
+            # Test string-based criteria
             if isinstance(criterion, str):
+                # Level criterion?
                 if criterion.startswith("@level:"):
                     potentialLevelString = criterion[7:].rstrip()
                     if potentialLevelString.isdigit():
                         wantedLevel = int(potentialLevelString)
-                        if self.data["level"] == wantedLevel:
+                        if int(self.data["level"]) == wantedLevel:
                             # We have a node at the right level
+                            self.matched = True
+                            matchCount += 1
+                            
                             for action in actionsList:
                                 propagateToChildren = self.applyAction(
                                     criterion, action, propagateToChildren
@@ -1634,6 +1644,8 @@ class CSVTree:
                     else:
                         # The level specified wasn't an integer
                         print(f"Bad level string '{potentialLevelString}")
+
+                # Priority criterion?
                 elif criterion.startswith("@priority:") | criterion.startswith(
                     "@prio:"
                 ):
@@ -1645,17 +1657,27 @@ class CSVTree:
                         wantedPriority = int(potentialPriorityString)
                         if self.data["priority"] == potentialPriorityString:
                             # We have a node with the right priority
+                            self.matched = True
+                            matchCount += 1
+
                             for action in actionsList:
                                 propagateToChildren = self.applyAction(
                                     criterion, action, propagateToChildren
                                 )
+
+                # No priority criterion?
                 elif criterion in ["@nopriority", "@noprio"]:
                     if self.data["priority"] == "":
                         # We have a node with no priority
+                        self.matched = True
+                        matchCount += 1
+                        
                         for action in actionsList:
                             propagateToChildren = self.applyAction(
                                 criterion, action, propagateToChildren
                             )
+
+                # Progress criterion?
                 elif criterion.startswith("@progress:") | criterion.startswith(
                     "@prog:"
                 ):
@@ -1667,13 +1689,46 @@ class CSVTree:
                         wantedProgress = int(potentialProgressString)
                         if self.data["progress"] == potentialProgressString:
                             # We have a node with the right progress
+                            self.matched = True
+                            matchCount += 1
+
                             for action in actionsList:
                                 propagateToChildren = self.applyAction(
                                     criterion, action, propagateToChildren
                                 )
+
+                # No progress criterion?
                 elif criterion in ["@noprogress", "@noprog"]:
                     if self.data["progress"] == "":
                         # We have a node with no progress
+                        self.matched = True
+                        matchCount += 1
+                        
+                        for action in actionsList:
+                            propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+
+                # Shape criterion?
+                elif criterion.startswith("@shape:"):
+                    wantedShape = criterion[7:].rstrip()
+                    if self.data["shape"] == wantedShape:
+                        # We have a node with the right shape
+                        self.matched = True
+                        matchCount += 1
+
+                        for action in actionsList:
+                             propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+
+                # No shape criterion?
+                elif criterion == "@noshape":
+                    if self.data["shape"] == "":
+                        # We have a node with no shape
+                        self.matched = True
+                        matchCount += 1
+                        
                         for action in actionsList:
                             propagateToChildren = self.applyAction(
                                 criterion, action, propagateToChildren
@@ -1681,8 +1736,12 @@ class CSVTree:
                 else:
                     # Criterion is a regular expression rather than a string
                     print(f"Bad criterion: '{criterion}'.")
+                    
             elif self.isMatch(criterion):
                 # Matched so apply all actions triggered by this match
+                self.matched = True
+                matchCount += 1
+                
                 for action in actionsList:
                     propagateToChildren = self.applyAction(
                         criterion, action, propagateToChildren
@@ -1691,7 +1750,9 @@ class CSVTree:
         # Apply filter to children, recursively - if propagation is indicated
         if propagateToChildren:
             for child in self.childNodes:
-                child.applyActions(criterion, actionsList)
+                matchCount += child.applyActions(criterion, actionsList)
+
+        return matchCount
 
     def writeCSVTree(self, outputArray):
         # Compose this node's line - if not root node
@@ -2498,6 +2559,61 @@ class CSVTree:
                 nodes = childNode._findNodesAtLevel(level, nodes)
 
         return nodes
+        
+    def countMatches(self, matchCriterion):
+    
+        # Clear the matches for this match criterion
+        #clearMatches()
+        
+        # Apply the matches, counting them
+        if str(matchCriterion)[:3] == "re.":
+            matchCount = self._countMatches(matchCriterion)
+            pattern = f"RegEx { str(matchCriterion)[11:-1]}"
+        else:
+            matchCount = self.applyActions(matchCriterion,["justcount"])
+            pattern = matchCriterion
+        
+        sys.stderr.write(f"Match count for {pattern}: {str(matchCount)}\n")
+        
+        # Return match count - which would be -1 if invalid
+        return matchCount
+
+    def _countMatches(self, matchCriterion):
+    
+        if self.isMatch(matchCriterion) is True:
+            matchCount = 1
+            self.matched = True
+            self.matches += 1
+        else:
+            matchCount = 0
+        
+        for childNode in self.childNodes:
+            matchCount += childNode._countMatches(matchCriterion)
+            
+        return matchCount
+
+    def countUnmatched(self):
+    
+        # Clear the matches for this match criterion
+        #clearMatches()
+        
+        # Apply the matches, counting them
+        unmatchedCount = self._countUnmatched()
+        
+        if unmatchedCount < 0:
+            unmatchedCount = 0
+        sys.stderr.write(f"Remaining unmatched: {str(unmatchedCount)}\n")
+
+    def _countUnmatched(self):
+        if self.matched is True:
+            unmatchedCount = 0
+        else:
+            unmatchedCount = 1
+        
+        for childNode in self.childNodes:
+            unmatchedCount += childNode._countUnmatched()
+            
+        return unmatchedCount
 
     def writeStatistics(self, actionslist):
         # Write statistics in one of a number of formats
@@ -3024,14 +3140,23 @@ manual.
 
         currentNode.data["row"] = row
 
+    # Statistics Header - For Matches and remaining unmatched
+    sys.stderr.write("Match Statistics\n")
+    sys.stderr.write("----------------\n")
+    
     # Apply battery of parameter pairs to do the colouring etc.
     # (A row could match more than one and a later one overrides an earlier one)
     # In some cases the "match criterion" is a command and the "actions list"
     # contains parameters for that command. e.g. "markdown"
+    matchesCount = -1
     for parmPair, matchCriterion in enumerate(matchCriteria):
         actionsList = actionsLists[parmPair]
+        
         if (isinstance(matchCriterion, str)) and (matchCriterion.startswith("@")):
             csvTree.applyActions(matchCriterion, actionsList)
+                
+            # generate statistics
+            matchesCount = csvTree.countMatches(matchCriterion)
 
         elif matchCriterion.pattern.lower() == "dump":
             sys.stderr.write(csvTree.dump(actionsList))
@@ -3068,11 +3193,23 @@ manual.
                 # commands that generate no output fall through
 
             else:
+                # This is where a node-level regular expression match would end up
                 csvTree.applyActions(matchCriterion, actionsList)
 
                 # It's possible some nodes were deleted so actually remove them
                 csvTree.cleanUpDeleted()
 
                 csvTree.repairSubtreeLevels(-2)
+                
+                # generate statistics
+                matchesCount = csvTree.countMatches(matchCriterion)
+
+    if matchesCount > -1:
+        # Valid to print unmatched
+        csvTree.countUnmatched()
+
+    # Statistics Trailer - For Matches and remaining unmatched
+    sys.stderr.write("----------------\n\n")
+
 
     TreeWriter().writeTreeAsCSV()
