@@ -36,8 +36,8 @@ from functools import reduce
 
 # from CSVTree import CSVTree
 
-filterCSV_level = "2.1"
-filterCSV_date = "1 May, 2022"
+filterCSV_level = "2.1+"
+filterCSV_date = "2 May, 2022"
 
 inputIndentCharacters = ""
 
@@ -1587,7 +1587,7 @@ class CSVTree:
             else:
                 self.data["icons"] += "," + action
 
-        elif action == "noicons":
+        elif action in ["noicons", "noicon"]:
             self.data["icons"] = ""
 
         elif action[0:4] == "sub:":
@@ -1726,6 +1726,45 @@ class CSVTree:
                 elif criterion == "@noshape":
                     if self.data["shape"] == "":
                         # We have a node with no shape
+                        self.matched = True
+                        matchCount += 1
+                        
+                        for action in actionsList:
+                            propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+
+                # Icon in set of icons criterion?
+                elif criterion.startswith("@icon:"):
+                    wantedIcon = criterion[6:].rstrip()
+                    iconArray =self.data["icons"].split(",")
+                    if wantedIcon in iconArray:
+                        # We have a node with the specigfied icon among all it has
+                        self.matched = True
+                        matchCount += 1
+
+                        for action in actionsList:
+                             propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+
+                # Some icons match criterion?
+                elif criterion.startswith("@iconsmatch:"):
+                    wantedIcon = criterion[12:].rstrip()
+                    if self.data["icons"] == wantedIcon:
+                        # We have a node with the right icon(s)
+                        self.matched = True
+                        matchCount += 1
+
+                        for action in actionsList:
+                             propagateToChildren = self.applyAction(
+                                criterion, action, propagateToChildren
+                            )
+
+                # No icon criterion?
+                elif criterion == "@noicons":
+                    if self.data["icons"] == "":
+                        # We have a node with no icons
                         self.matched = True
                         matchCount += 1
                         
