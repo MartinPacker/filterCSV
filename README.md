@@ -133,16 +133,17 @@ Specifiers are used to specify which nodes to operate on and can be in one of th
 * A priority specifier of the form `@priority:n` - where `n` is an integer between 1 and 5. You can use `@prio:n` for short. You can use `@nopriority` or `@noprio` to match nodes where the priority has not been set.
 * A progress specifier of the form `@progress:n` - where `n` is an integer between 0 and 100, representing percent complete. You can use `@prog:n` for short. You can use `@noprogress` or `@noprog` to match nodes where the progress has not been set.
 * A shape specifier of the form `@shape:myshape` - where `myshape` is one of the shapes described in [iThoughts Shape Names](#ithoughtsshapenames). You can use `@noshape` to specify nodes where the shape hasn't been set.
+* an icon specifier of the form `@icon:icon` - where `icon` is the name of the icon. It is one of the icons described in [iThoughts Icon Names](#ithoughtsiconnames). If the node's icon set contains this icon then the node matches. `@noicon` matches if the node has no icons.
 
 **Notes:**
 
-If you want to match a cell's text exactly you can code something like `^A1$` where `^` means 'the start of the text' and `$` means 'the end of the text'.
+* If you want to match a cell's text exactly you can code something like `^A1$` where `^` means 'the start of the text' and `$` means 'the end of the text'.
+* In the `level:n` form of the specifier the level of a node is taken from how it was read in - though that could be modified by `check repairsubtree`. \
+* For `@priority:n`, `@progress:n`, `@shape:s`, `@icon:i` an empty value in the node's attribute means it's not been set.
+* You can use values for shape, icon, etc, that iThoughts doesn't support, perhaps to tag a node. It is unpredictable what iThoughts will do if it encounters them.
+* If you're not sure the levels are properly numbered you should run `check repairsubtree` first. For example 
 
-In the `level:n` form of the specifier the level of a node is taken from how it was read in - though that could be modified by `check repairsubtree`. \
-If you're not sure the levels are properly numbered you should run `check repairsubtree` first. For example
-
-For both `@priority:n` and `@progress:n` an empty value in the node's attribute means it's not been set.
-
+~
 ```
 filterCSV < input_file.csv > output_file.csv \
     check repairsubtree \
